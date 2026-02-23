@@ -1,0 +1,20 @@
+##apiVersion: "k8s.cni.cncf.io/v1"
+##kind: NetworkAttachmentDefinition
+##metadata:
+##  name: longhorn-macvlan
+##  namespace: kube-system
+##spec:
+##  config: '{
+##      "cniVersion": "0.3.0",
+##      "type": "macvlan",
+##      "master": "enp3s0",
+##      "mode": "bridge",
+##      "ipam": {
+##        "type": "host-local",
+##        "subnet": "10.0.201.0/24",
+##        "rangeStart": "10.0.201.10",
+##        "rangeEnd": "10.0.201.199",
+##        "routes": [],
+##        "gateway": ""
+##      }
+##    }'
