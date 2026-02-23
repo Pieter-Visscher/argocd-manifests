@@ -1,0 +1,201 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gateway
+  labels:
+    name: gateway
+    gateway-access: "true"
+    mgt-gateway-access: "true"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: homelab-gateway
+  namespace: gateway
+spec:
+  gatewayClassName: cilium 
+  addresses:
+  - type: IPAddress
+    value: "10.0.200.200"
+  listeners:
+  - name: http
+    hostname: "*.nauvis.lan"
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+     namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          gateway-access: "true"
+  - name: https
+    hostname: "*.nauvis.lan"
+    protocol: HTTPS
+    port: 443
+    allowedRoutes:
+     namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          gateway-access: "true"
+    tls:
+      mode: "Terminate"
+      certificateRefs:
+        - name: wildcard-nauvis-lan-tls
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: homelab-mgt-gateway
+  namespace: gateway
+spec:
+  gatewayClassName: cilium 
+  addresses:
+  - type: IPAddress
+    value: "10.0.50.199"
+  listeners:
+  - name: ssh
+    protocol: TCP
+    port: 22
+    allowedRoutes:
+     namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          mgt-gateway-access: "true"
+  - name: http
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+     namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          mgt-gateway-access: "true"
+  - name: https
+    hostname: "*.nauvis.lan"
+    protocol: HTTPS
+    port: 443
+    allowedRoutes:
+     namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          mgt-gateway-access: "true"
+    tls:
+      mode: "Terminate"
+      certificateRefs:
+        - name: wildcard-nauvis-lan-tls
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: homelab-wan-gateway
+  namespace: gateway
+spec:
+  gatewayClassName: cilium 
+  addresses:
+  - type: IPAddress
+    value: "10.0.200.199"
+  listeners:
+  - name: http
+    hostname: "pieter.fish"
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+     namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          wan-gateway-access: "true"
+  - name: https
+    hostname: "*.pieter.fish"
+    protocol: HTTPS
+    port: 443
+    allowedRoutes:
+     namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          wan-gateway-access: "true"
+    tls:
+      mode: "Terminate"
+      certificateRefs:
+        - name: wildcard-pieter-fish-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nauvis-lan-cert-tls
+  namespace: gateway
+spec:
+  secretName: wildcard-nauvis-lan-tls
+  issuerRef:
+    name: homelab-ca-issuer
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.nauvis.lan"
+  - nauvis.lan
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: pieter-fish-cert-tls
+  namespace: gateway
+spec:
+  secretName: wildcard-pieter-fish-tls
+  issuerRef:
+    name: cloudflare-issuer
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.pieter.fish"
+  - pieter.fish
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mgt-http-redirect-route
+  namespace: gateway
+spec:
+  parentRefs:
+  - name: homelab-mgt-gateway
+    sectionName: http
+  rules:
+  - filters:
+    - type: RequestRedirect
+      requestRedirect:
+        scheme: https
+        statusCode: 301
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-redirect-route
+  namespace: gateway
+spec:
+  parentRefs:
+  - name: homelab-gateway
+    sectionName: http
+  rules:
+  - filters:
+    - type: RequestRedirect
+      requestRedirect:
+        scheme: https
+        statusCode: 301
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: wan-http-redirect-route
+  namespace: gateway
+spec:
+  parentRefs:
+  - name: homelab-wan-gateway
+    sectionName: http
+  rules:
+  - filters:
+    - type: RequestRedirect
+      requestRedirect:
+        scheme: https
+        statusCode: 301

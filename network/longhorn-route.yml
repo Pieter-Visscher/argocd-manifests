@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: longhorn-system
+  labels:
+    mgt-gateway-access: "true"
+    name: longhorn-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: longhorn-route
+  namespace: longhorn-system
+spec:
+  parentRefs:
+  - name: homelab-mgt-gateway
+    sectionName: https
+    namespace: gateway
+  - name: homelab-mgt-gateway
+    sectionName: http
+    namespace: gateway
+  hostnames:
+  - "longhorn.nauvis.lan" 
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: longhorn-frontend
+      port: 80
