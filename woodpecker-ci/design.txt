@@ -1,0 +1,6 @@
+The goal is to deploy Woodpecker with the following features:
+- deploy dedicated agents for certain jobs (satellite cant handle concurrent jobs
+- configure default behaviour via configmap
+- support custom CA
+- run jobs in different namespace then main woodpecker components
+- dedicated agents in dedicated namespace?

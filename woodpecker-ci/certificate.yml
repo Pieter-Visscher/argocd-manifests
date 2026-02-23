@@ -1,0 +1,12 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: woodpecker-nauvis-lan-cert-tls
+spec:
+  secretName: woodpecker-nauvis-lan-tls
+  issuerRef:
+    name: homelab-ca-issuer
+    kind: ClusterIssuer
+  dnsNames:
+  - woodpecker.nauvis.lan
