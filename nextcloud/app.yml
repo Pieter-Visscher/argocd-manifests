@@ -1,0 +1,182 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud 
+  labels:
+    name: nextcloud
+    instance: nextcloud
+    component: webservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: nextcloud
+      instance: nextcloud
+      component: webservice
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: nextcloud
+        instance: nextcloud
+        component: webservice
+    spec:
+      securityContext:
+        fsGroup: 33
+        runAsUser: 0
+        runAsGroup: 33
+      containers:
+      - name: nextcloud 
+        image: nextcloud:32-apache
+        command:
+        - sh
+        - -c
+        - >
+          timeout 30s /entrypoint.sh apache2-foreground;
+          echo "second entrypoint run";
+          exec /entrypoint.sh apache2-foreground
+        ports:
+        - containerPort: 80
+        env:
+        - name: NEXTCLOUD_UPDATE
+          value: "1"
+        - name: NEXTCLOUD_ADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: NEXTCLOUD_ADMIN_USER
+        - name: NEXTCLOUD_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: NEXTCLOUD_ADMIN_PASSWORD 
+        - name: MYSQL_USER
+          valueFrom: 
+            secretKeyRef:
+              name: nextcloud-secret 
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD 
+          valueFrom: 
+            secretKeyRef:
+              name: nextcloud-secret 
+              key: MYSQL_PASSWORD 
+        - name: MYSQL_DATABASE 
+          valueFrom: 
+            secretKeyRef:
+              name: nextcloud-secret 
+              key: MYSQL_DATABASE
+        - name: MYSQL_HOST
+          value: mariadb-nextcloud-service
+        - name: REDIS_HOST
+          value: redis-nextcloud-service
+        - name: NEXTCLOUD_TRUSTED_DOMAINS
+          value: nextcloud.nauvis.lan
+        volumeMounts:
+        - name: data
+          mountPath: /var/www/html/data
+          subpath: data
+        - name: config
+          mountPath: /var/www/html/config
+          subpath: config
+        - name: apps
+          mountPath: /var/www/html/apps
+          subpath: apps
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: nextcloud-data-pvc
+        - name: config
+          persistentVolumeClaim:
+            claimName: nextcloud-config-pvc
+        - name: apps
+          persistentVolumeClaim:
+            claimName: nextcloud-apps-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-mariadb
+  labels:
+    name: mariadb
+    instance: nextcloud
+    component: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: mariadb
+      instance: nextcloud
+      component: database
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: mariadb
+        instance: nextcloud
+        component: database
+    spec:
+      containers:
+      - name: mariadb
+        image: docker.io/library/mariadb:11
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MARIADB_ROOT_PASSWORD 
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: MYSQL_ROOT_PASSWORD
+        - name: MARIADB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: MYSQL_DATABASE
+        - name: MARIADB_USER
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: MYSQL_USER
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: MYSQL_PASSWORD
+        volumeMounts:
+        - name: dbdata
+          mountPath: /var/lib/mysql
+      volumes:
+        - name: dbdata
+          persistentVolumeClaim:
+            claimName: nextcloud-mariadb-pvc
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-redis
+  labels:
+    name: redis
+    instance: nextcloud
+    component: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: redis
+      instance: nextcloud
+      component: cache
+  template:
+    metadata:
+      labels:
+        name: redis
+        instance: nextcloud
+        component: cache
+    spec:
+      containers:
+      - name: redis
+        image: docker.io/library/redis:8
+        ports:
+        - containerPort: 6379

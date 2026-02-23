@@ -1,0 +1,42 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-service
+spec:
+  selector:
+    name: nextcloud
+    instance: nextcloud
+    component: webservice
+  type: ClusterIP 
+  ports:
+    - protocol: TCP
+      port: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-nextcloud-service
+spec:
+  selector:
+    name: mariadb 
+    instance: nextcloud
+    component: database 
+  type: ClusterIP 
+  ports:
+    - protocol: TCP
+      port: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-nextcloud-service
+spec:
+  selector:
+    name: redis 
+    instance: nextcloud
+    component: cache
+  type: ClusterIP 
+  ports:
+    - protocol: TCP
+      port: 6379
