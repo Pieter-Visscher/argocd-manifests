@@ -110,7 +110,7 @@ spec:
         matchLabels:
           wan-gateway-access: "true"
   - name: https
-    hostname: "*.pieter.fish"
+    hostname: "pieter.fish"
     protocol: HTTPS
     port: 443
     allowedRoutes:
