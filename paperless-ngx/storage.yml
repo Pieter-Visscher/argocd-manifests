@@ -1,0 +1,115 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-ngx-pvc-redis
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: longhorn
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-ngx-pvc-mariadb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: longhorn
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-ngx-pvc-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: longhorn
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-ngx-pvc-media
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: longhorn
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: paperless-ngx-pvc-consume
+#spec:
+#  accessModes:
+#    - ReadWriteMany
+#  resources:
+#    requests:
+#      storage: 1Gi
+#  storageClassName: nfs
+#  volumeName: paperless-ngx-pv-consume
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: paperless-ngx-pvc-export
+#spec:
+#  accessModes:
+#    - ReadWriteMany
+#  resources:
+#    requests:
+#      storage: 1Gi
+#  storageClassName: nfs
+#  volumeName: paperless-ngx-pv-export
+#---
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: paperless-ngx-pv-consume
+#spec:
+#  capacity:
+#    storage: 1Gi
+#  accessModes:
+#    - ReadWriteMany
+#  storageClassName: nfs
+#  nfs:
+#    server: nfs.nauvis.lan
+#    path: /var/nfs/eva/consume
+#---
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: paperless-ngx-pv-export
+#spec:
+#  capacity:
+#    storage: 1Gi
+#  accessModes:
+#    - ReadWriteMany
+#  storageClassName: nfs
+#  nfs:
+#    server: nfs.nauvis.lan
+#    path: /var/nfs/eva/export
+#---
+#apiVersion: storage.k8s.io/v1
+#kind: StorageClass
+#metadata:
+#  name: nfs
+#  annotations:
+#    storageclass.kubernetes.io/is-default-class: "false"
+#provisioner: "kubernetes.io/no-provisioner"
+#reclaimPolicy: Retain
+#allowVolumeExpansion: true
+#mountOptions:
+#  - discard
+#volumeBindingMode: Immediate
