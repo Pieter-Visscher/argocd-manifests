@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo
+  labels:
+    app: forgejo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: forgejo
+    spec:
+      containers:
+      - name: forgejo
+        image: codeberg.org/forgejo/forgejo:13
+        ports:
+        - containerPort: 22
+        - containerPort: 3000
+        env:
+        - name: FORGEJO_CUSTOM
+          value: /data/gitea
+        - name: FORGEJO__server__CERT_FILE
+          value: "https/cert.pem"
+        - name: FORGEJO__server__KEY_FILE
+          value: "https/key.pem"
+        - name: FORGEJO__server__PROTOCOL
+          value: "https"
+        volumeMounts:
+          - name: data
+            mountPath: /data
+          - name: cert
+            mountPath: /data/gitea/https/cert.pem
+            subPath: cert.pem
+          - name: cert
+            mountPath: /data/gitea/https/key.pem
+            subPath: key.pem
+          - name: cert
+            mountPath: /usr/local/share/ca-certificates/nauvis-lan.crt
+            subPath: ca.crt
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: forgejo-pvc
+        - name: cert
+          secret:
+            secretName: git-nauvis-lan-tls
+            items:
+            - key: tls.crt
+              path: cert.pem
+            - key: tls.key
+              path: key.pem
+            - key: ca.crt
+              path: ca.crt
