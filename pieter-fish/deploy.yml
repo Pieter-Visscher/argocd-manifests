@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pieter-fish
+  labels:
+    app: pieter-fish
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pieter-fish
+  template:
+    metadata:
+      labels:
+        app: pieter-fish
+    spec:
+      containers:
+      - name: pieter-fish-container
+        image: registry.nauvis.lan/pieter.fish:1.17
+        ports:
+        - containerPort: 80
