@@ -1,0 +1,25 @@
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: iot-vlan
+  namespace: home-assistant
+spec:
+  config: '{
+      "cniVersion": "0.3.1",
+      "name": "iot-vlan",
+      "type": "bridge",
+      "bridge": "br91",
+      "promiscMode": true,
+      "ipam": {
+        "type": "host-local",
+        "ranges": [
+          [
+            {
+              "subnet": "10.0.91.0/24",
+              "gateway": "10.0.91.1"
+            }
+          ]
+        ]
+      }
+    }'

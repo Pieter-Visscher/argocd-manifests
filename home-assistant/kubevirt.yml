@@ -1,0 +1,68 @@
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: home-assistant-os
+  labels:
+    app: home-assistant
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: home-assistant-os
+    spec:
+#      nodeSelector:
+#        feature.node.kubernetes.io/usb-ef_303a_4002.present: "true"
+      domain:
+        features:
+          hyperv:
+            relaxed: { enabled: true }
+            vapic: { enabled: true }
+            spinlocks: { enabled: true }
+          acpi: {}
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        cpu:
+#          dedicatedCpuPlacement: true
+          cores: 2
+        devices:
+          disks:
+            - name: bootdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              bridge: {}
+#          hostDevices:
+#            - deviceName: "smlight.tech/slzb-mr2u"
+#              name: "slzb-mr2u"
+        resources:
+          requests:
+            memory: 4Gi
+      networks:
+        - name: default
+          multus:
+            networkName: iot-vlan
+      volumes:
+        - name: bootdisk
+          dataVolume:
+            name: haos-disk-image
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: haos-disk-image
+spec:
+  source:
+    http:
+      # Replace with the actual URL for the HAOS KVM image
+      url: "https://github.com/home-assistant/operating-system/releases/download/17.0/haos_ova-17.0.qcow2.xz"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Gi
