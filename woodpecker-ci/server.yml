@@ -68,7 +68,7 @@ spec:
         - mountPath: /var/lib/woodpecker
           name: data
         - name: cert
-          mountPath: /usr/local/share/ca-certificates/nauvis-lan.crt
+          mountPath: /usr/local/share/ca-certificates/nauvis.lan/ca.crt
           subPath: ca.crt
       volumes:
         - name: cert
