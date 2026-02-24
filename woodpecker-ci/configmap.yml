@@ -8,6 +8,6 @@ data:
   WOODPECKER_BACKEND: kubernetes
   WOODPECKER_FORGEJO: "true"
   WOODPECKER_FORGEJO_URL: https://git.nauvis.lan
-  WOODPECKER_FORGEJO_SKIP_VERIFY: "true"
+  WOODPECKER_FORGEJO_SKIP_VERIFY: "false"
   WOODPECKER_HOST: https://woodpecker.nauvis.lan
   WOODPECKER_OPEN: "true"
