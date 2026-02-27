@@ -21,11 +21,11 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: nauvis-lan-cert-tls
+  name: pieter-fish-cert-tls
 spec:
-  secretName: git-nauvis-lan-tls
+  secretName: git-pieter-fish-tls
   issuerRef:
-    name: homelab-ca-issuer
+    name: cloudflare-issuer
     kind: ClusterIssuer
   dnsNames:
-  - git.nauvis.lan
+  - git.pieter.fish

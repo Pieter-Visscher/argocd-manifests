@@ -41,7 +41,7 @@ spec:
           - name: cert
             mountPath: /data/gitea/https/key.pem
             subPath: key.pem
-          - name: cert
+          - name: ca-cert
             mountPath: /usr/local/share/ca-certificates/nauvis-lan.crt
             subPath: ca.crt
       volumes:
@@ -50,11 +50,15 @@ spec:
             claimName: forgejo-pvc
         - name: cert
           secret:
-            secretName: git-nauvis-lan-tls
+            secretName: git-pieter-fish-tls
             items:
             - key: tls.crt
               path: cert.pem
             - key: tls.key
               path: key.pem
+        - name: ca-cert
+          secret:
+            secretName: nauvis-ca-tls
+            items:
             - key: ca.crt
               path: ca.crt
