@@ -6,8 +6,10 @@ metadata:
 data:
   WOODPECKER_ADMIN: woodpecker,admin
   WOODPECKER_BACKEND: kubernetes
+  WOODPECKER_CA_FILE: /usr/local/share/ca-certificates/nauvis.lan/ca.crt
   WOODPECKER_FORGEJO: "true"
-  WOODPECKER_FORGEJO_URL: https://git.nauvis.lan
+  WOODPECKER_FORGEJO_URL: https://git.pieter.fish
   WOODPECKER_FORGEJO_SKIP_VERIFY: "false"
   WOODPECKER_HOST: https://woodpecker.nauvis.lan
   WOODPECKER_OPEN: "true"
+  SSL_CERT_FILE: /usr/local/share/ca-certificates/nauvis.lan/ca.crt

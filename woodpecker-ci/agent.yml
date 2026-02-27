@@ -59,7 +59,7 @@ spec:
         - mountPath: /etc/woodpecker
           name: agent-config
         - name: cert
-          mountPath: /usr/local/share/ca-certificates/nauvis-lan.crt
+          mountPath: /usr/local/share/ca-certificates/nauvis.lan/ca.crt
           subPath: ca.crt
       dnsPolicy: ClusterFirst
       restartPolicy: Always
