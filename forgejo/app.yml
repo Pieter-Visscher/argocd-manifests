@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: forgejo
-        image: codeberg.org/forgejo/forgejo:13
+        image: codeberg.org/forgejo/forgejo:14
         ports:
         - containerPort: 22
         - containerPort: 3000
