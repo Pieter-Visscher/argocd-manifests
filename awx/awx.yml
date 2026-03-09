@@ -7,3 +7,4 @@ metadata:
 spec:
   service_type: LoadBalancer
   postgres_data_volume_init: true
+  admin_password_secret: awx-admin-password
