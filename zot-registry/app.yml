@@ -1,8 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    deployment.kubernetes.io/revision: '1'
   labels:
     app.kubernetes.io/instance: zot-registry
     app.kubernetes.io/name: zot
@@ -11,16 +9,15 @@ metadata:
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/instance: zot-registry
       app.kubernetes.io/name: zot
   strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
+    #rollingUpdate:
+    #  maxSurge: 25%
+    #  maxUnavailable: 25%
+    type: Recreate
   template:
     metadata:
       labels:
@@ -28,7 +25,7 @@ spec:
         app.kubernetes.io/name: zot
     spec:
       containers:
-        - image: ghcr.io/project-zot/zot:v2.1.11
+        - image: ghcr.io/project-zot/zot:v2.1.15
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
