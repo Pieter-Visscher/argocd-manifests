@@ -185,7 +185,7 @@ spec:
               name: paperless-ngx-secret
               key: oauth_application_id
         - name: PAPERLESS_OAUTH_CALLBACK_BASE_URL
-          value: https://paperless.pieter.fish
+          value: https://paperless.nauvis.lan
         - name: PAPERLESS_URL
           value: "https://paperless.nauvis.lan"
         - name: PAPERLESS_REDIS
