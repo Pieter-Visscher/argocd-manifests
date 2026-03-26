@@ -100,7 +100,7 @@ spec:
     value: "10.0.200.199"
   listeners:
   - name: http
-    hostname: "pieter.fish"
+    hostname: "*.pieter.fish"
     protocol: HTTP
     port: 80
     allowedRoutes:
@@ -110,7 +110,7 @@ spec:
         matchLabels:
           wan-gateway-access: "true"
   - name: https
-    hostname: "pieter.fish"
+    hostname: "*.pieter.fish"
     protocol: HTTPS
     port: 443
     allowedRoutes:
