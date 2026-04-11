@@ -19,7 +19,7 @@ spec:
   - type: IPAddress
     value: "10.0.200.200"
   listeners:
-  - name: http
+  - name: http-nauvis
     hostname: "*.nauvis.lan"
     protocol: HTTP
     port: 80
@@ -29,7 +29,7 @@ spec:
       selector:
         matchLabels:
           gateway-access: "true"
-  - name: https
+  - name: https-nauvis
     hostname: "*.nauvis.lan"
     protocol: HTTPS
     port: 443
@@ -43,6 +43,30 @@ spec:
       mode: "Terminate"
       certificateRefs:
         - name: wildcard-nauvis-lan-tls
+  - name: http-pieter-fish
+    hostname: "*.pieter.fish"
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+     namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          gateway-access: "true"
+  - name: https-nauvis
+    hostname: "*.pieter.fish"
+    protocol: HTTPS
+    port: 443
+    allowedRoutes:
+     namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          gateway-access: "true"
+    tls:
+      mode: "Terminate"
+      certificateRefs:
+        - name: wildcard-pieter-fish-tls
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
