@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: powerdns-authorative-config
+data:
+  pdns.conf: |
+    local-address=0.0.0.0
+    launch=bind
+    bind-config=/etc/powerdns/zones/named.conf
+    bind-check-interval=60
+    bind-ignore-broken-records=yes

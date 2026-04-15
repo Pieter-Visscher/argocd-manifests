@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dns-records
+data:
+  named.conf: |
+    zone "my-home.lan" {
+      type master;
+      file "/etc/powerdns/zones/my-home.lan.zone";
+    };
+    zone "nauvis.lan" {
+      type master;
+      file "/etc/powerdns/zones/nauvis.lan.zone";
+    };
+  my-home.lan.zone: | 
+    $ORIGIN my-home.lan.
+    $TTL 3600
+    @ IN SOA ns1.my-home.lan. admin.my-home.lan. (
+      2026041401; serial (YYYYMMDDNN)
+      3600 ; refresh
+      600 ; retry
+      1209600 ; expire
+      600 ) ; minimum
+
+    @ IN NS ns1.my-home.lan.
+    ; Infrastructure
+    ns1 IN A 10.0.0.10
+    router IN A 10.0.0.1
+    ; Services
+    nas IN A 10.0.0.50
+    k8s-api IN A 10.0.0.100
+    test IN A 10.0.0.101
+  nauvis.lan.zone: | 
+    $ORIGIN nauvis.lan.
+    $TTL 600
+    @ IN SOA ns.nauvis.lan. admin.nauvis.lan. (
+      2026041401; serial (YYYYMMDDNN)
+      3600 ; refresh
+      600 ; retry
+      1209600 ; expire
+      600 ) ; minimum
+
+    @ IN NS ns.nauvis.lan
+    ; Infrastructure
+    ns           IN A 10.0.200.3
+    route         IN A 10.0.200.200
+
+    ; Services
+    grafana       IN CNAME route
+    homeassistant IN CNAME route
+    immich        IN CNAME route
+    nextcloud     IN CNAME route
+    omni-tools    IN CNAME route
+    paperless     IN CNAME route
+    prometheus    IN CNAME route
+    registry      IN CNAME route
+    woodpecker    IN CNAME route
+
+    awx           IN A 10.0.200.7
+    longhorn      IN A 10.0.50.199
+    argocd        IN A 10.0.50.150
+    
