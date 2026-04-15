@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dawarich-redis-deploy
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of: dawarich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+      app.kubernetes.io/part-of: dawarich
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: redis
+        app.kubernetes.io/part-of: dawarich
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+      - name: redis
+        image: redis:7.4-alpine
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redisdata
+          mountPath: /data
+        args: ["redis-server", "--save", "900", "1", "--save", "300", "10", "--appendonly", "no"]
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 5
+          timeoutSeconds: 10
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+      volumes:
+        - name: redisdata
+          persistentVolumeClaim:
+            claimName: dawarich-pvc-shared
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dawarich-svc-redis
+spec:
+  selector:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of: dawarich
+  ports:
+    - protocol: TCP
+      port: 6379
