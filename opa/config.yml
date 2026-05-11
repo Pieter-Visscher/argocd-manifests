@@ -31,3 +31,10 @@ data:
 kind: ConfigMap
 metadata:
   name: opa-policies
+---
+apiVersion: v1
+data:
+  opa-config.yaml: IyBTaW1wbGUgY29uZmlnIGZvciBsb2NhbCBwb2xpY3kgZXZhbHVhdGlvbgpkZWNpc2lvbl9sb2dzOgogIGNvbnNvbGU6IHRydWUgIyBQcmludHMgZXZlcnkgZGVjaXNpb24gQVdYIHJlcXVlc3RzIHRvIHRoZSBjb250YWluZXIgbG9ncwpzdGF0dXM6CiAgY29uc29sZTogdHJ1ZSAjIFByaW50cyBPUEEncyBpbnRlcm5hbCBoZWFsdGggc3RhdHVzIHRvIHRoZSBsb2dzCg==
+kind: Secret
+metadata:
+  name: opa-config

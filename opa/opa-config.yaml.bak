@@ -1,0 +1,5 @@
+# Simple config for local policy evaluation
+decision_logs:
+  console: true # Prints every decision AWX requests to the container logs
+status:
+  console: true # Prints OPA's internal health status to the logs
