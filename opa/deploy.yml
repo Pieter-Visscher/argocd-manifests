@@ -23,7 +23,7 @@ spec:
                 topologyKey: "kubernetes.io/hostname"
       containers:
         - name: opa
-          image: openpolicyagent/opa:v1.16.1
+          image: openpolicyagent/opa:1.16.1
           args:
           - "run"
           - "--server"
