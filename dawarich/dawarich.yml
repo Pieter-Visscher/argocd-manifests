@@ -56,7 +56,7 @@ spec:
               value: "5"
             - name: RAILS_MAX_THREADS
               value: "10"
-          image: freikin/dawarich:1.6.1
+          image: freikin/dawarich:1.7.5
           imagePullPolicy: Always
           volumeMounts:
             - mountPath: /var/app/public
@@ -81,9 +81,9 @@ spec:
             - name: RAILS_ENV
               value: development
             - name: REDIS_URL
-              value: redis://redis-master.redis.svc.cluster.local:6379/10
+              value: redis://dawarich-svc-redis:6379
             - name: DATABASE_HOST
-              value: postgres-postgresql.db.svc.cluster.local
+              value: dawarich-svc-postgis
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -110,14 +110,14 @@ spec:
             - name: APPLICATION_HOST
               value: localhost
             - name: APPLICATION_HOSTS
-              value: "dawarich.example.com, localhost"
+              value: "dawarich.pieter.fish, localhost"
             - name: APPLICATION_PROTOCOL
               value: http
             - name: PHOTON_API_HOST
               value: photon.komoot.io
             - name: PHOTON_API_USE_HTTPS
               value: "true"
-          image: freikin/dawarich:latest
+          image: freikin/dawarich:1.7.5
           imagePullPolicy: Always
           volumeMounts:
             - mountPath: /var/app/public
