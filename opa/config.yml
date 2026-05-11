@@ -1,11 +1,16 @@
+---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-policies
 data:
-  policy.rego: |
+  aap-policy.rego: |
+    # --- AAP Validation Policy ---
     package aap_policy_examples
 
     import rego.v1
 
-    # Default policy response indicating allowed status with no violations
+    # Default policy response
     default organization_inventory_validation := {
         "allowed": true,
         "violations": [],
@@ -13,14 +18,10 @@ data:
 
     # Validate that only "Default" can use "Demo Inventory"
     organization_inventory_validation := result if {
-        # Extract values from input
         inventory_name := object.get(input, ["inventory", "name"], "")
         org_name := object.get(input, ["organization", "name"], "")
 
-        # Check if inventory is "Demo Inventory"
         inventory_name == "Demo Inventory"
-
-        # Check if organization is not "Default"
         org_name != "Default"
 
         result := {
@@ -28,9 +29,20 @@ data:
             "violations": ["Only the 'Default' organization should use the 'Demo Inventory' inventory"],
         }
     }
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: opa-policies
+  name: opa-healthcheck-policies
+data:
+  healthcheck-policy.rego: |
+
+    # --- Health Check Policy ---
+    # This satisfies the "data.system.health" undefined errors
+    package system.health
+
+    default live := true
+    default ready := true
 ---
 apiVersion: v1
 data:

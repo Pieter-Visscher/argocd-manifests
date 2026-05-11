@@ -12,15 +12,6 @@ spec:
       labels:
         app: opa
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app: opa
-                topologyKey: "kubernetes.io/hostname"
       containers:
         - name: opa
           image: openpolicyagent/opa:1.16.1
@@ -28,32 +19,38 @@ spec:
           - "run"
           - "--server"
           - "--addr=:8181"
-          - "--config-file=/run/secrets/opa-config.yaml"
+          - "--config-file=/etc/opa/config.yaml"
+          - "/etc/opa/policies"
           ports:
             - containerPort: 8181
-          resources:
-            requests:
-              memory: "1Gi"
-              cpu: "1"
-            limits:
-              memory: "1Gi"
-              cpu: "1"
           livenessProbe:
             httpGet:
               path: /health/live
               port: 8181
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            initialDelaySeconds: 15
           readinessProbe:
             httpGet:
-              path: /health/ready
+              path: /health/ready # Detail view for debugging
               port: 8181
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            initialDelaySeconds: 15
           volumeMounts:
-            - name: opa-config
-              mountPath: /run/secrets
+            # Mount the specific file to avoid directory collisions
+            - name: opa-config-vol
+              mountPath: /etc/opa/config.yaml
+              subPath: opa-config.yaml 
+            - name: opa-policy-vol
+              mountPath: /etc/opa/policies/policy.rego
+              subPath: policy.rego
+            - name: opa-healthcheck-policy-vol
+              mountPath: /etc/opa/policies/healthcheck-policy.rego
+              subPath: healthcheck-policy.rego
       volumes:
-        - name: opa-config
+        - name: opa-config-vol
           secret:
             secretName: opa-config
+        - name: opa-policy-vol
+          configMap:
+            name: opa-policies
+        - name: opa-healthcheck-policy-vol
+          configMap:
+            name: opa-healthcheck-policies
