@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cattle-system
+  labels:
+    gateway-access: "true"
+    name: cattle-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: rancher-route
+  namespace: cattle-system
+spec:
+  parentRefs:
+  - name: homelab-gateway
+    sectionName: https
+    namespace: gateway
+  - name: homelab-gateway
+    sectionName: http
+    namespace: gateway
+  hostnames:
+  - "rancher.nauvis.lan" 
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: rancher
+      port: 80
