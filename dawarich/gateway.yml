@@ -27,7 +27,7 @@ metadata:
 spec:
   parentRefs:
   - name: homelab-priv-wan-gateway
-    sectionName: https-pieter-fish
+    sectionName: https
     namespace: gateway
   
   hostnames:
