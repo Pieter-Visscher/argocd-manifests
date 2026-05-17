@@ -47,7 +47,7 @@ metadata:
   name: homelab-priv-wan-https-route
 spec:
   parentRefs:
-  - name: homelab-wan-gateway
+  - name: homelab-priv-wan-gateway
     sectionName: https
     namespace: gateway
   
