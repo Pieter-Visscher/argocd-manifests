@@ -24,20 +24,6 @@ data:
         },
         "ui": {
           "enable": true
-        },
-        "sync": {
-          "enable": true,
-          "registries": [
-            {
-              "urls": ["https://registry.ollama.ai"],
-              "onDemand": true,
-              "content": [
-                {
-                  "prefix": "library/bge-m3"
-                }
-              ]
-            }
-          ]
         }
       }
     }
