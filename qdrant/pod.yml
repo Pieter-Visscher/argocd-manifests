@@ -1,0 +1,38 @@
+# Helm test artifact — not applied by ArgoCD. Kept for reference.
+# ---
+# # Source: qdrant/templates/tests/test-db-interaction.yaml
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: "qdrant-test-db-interaction"
+#   labels:
+#     helm.sh/chart: qdrant-1.18.2
+#     app: qdrant
+#     app.kubernetes.io/name: qdrant
+#     app.kubernetes.io/instance: qdrant
+#     app.kubernetes.io/version: "v1.18.2"
+#     app.kubernetes.io/managed-by: Helm
+#
+#   annotations:
+#     "helm.sh/hook": test
+# spec:
+#   containers:
+#     - name: test-script
+#       image: "registry.suse.com/bci/bci-base:latest"
+#       args: ['bash', '/app/entrypoint.sh']
+#       volumeMounts:
+#         - mountPath: /app
+#           name: test-script
+#       resources:
+#         limits:
+#           cpu: 100m
+#           memory: 200Mi
+#         requests:
+#           cpu: 100m
+#           memory: 200Mi
+#   volumes:
+#     - name: test-script
+#       configMap:
+#         name: "qdrant-test-db-interaction"
+#   restartPolicy: Never
+#   serviceAccountName: qdrant

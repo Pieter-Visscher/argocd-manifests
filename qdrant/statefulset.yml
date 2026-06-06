@@ -1,0 +1,148 @@
+---
+# Source: qdrant/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: qdrant
+  labels:
+    app: qdrant
+    app.kubernetes.io/name: qdrant
+    app.kubernetes.io/instance: qdrant
+    app.kubernetes.io/version: "v1.18.2"
+    
+spec:
+  replicas: 1
+  # HA: set to 3 and uncomment P2P ports and cluster config in configmap
+  # replicas: 3
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+  selector:
+    matchLabels:
+      app: qdrant
+      app.kubernetes.io/name: qdrant
+      app.kubernetes.io/instance: qdrant
+  serviceName: qdrant-headless
+  template:
+    metadata:
+      annotations:
+        checksum/config: 37d4cbfd63ed7bf910b71876827d62fc0ae6559ccfe61bca408b772452064447
+      labels:
+        app: qdrant
+        app.kubernetes.io/name: qdrant
+        app.kubernetes.io/instance: qdrant
+        
+    spec:
+      initContainers:
+      - name: ensure-dir-ownership
+        image: "docker.io/qdrant/qdrant:v1.18.2"
+        command:
+          - chown
+          - -R
+          - 1000:3000
+          - /qdrant/storage
+          - /qdrant/snapshots
+        volumeMounts:
+          - name: qdrant-storage
+            mountPath: /qdrant/storage
+          - name: qdrant-snapshots
+            mountPath: /qdrant/snapshots
+      containers:
+        - name: qdrant
+          image: "docker.io/qdrant/qdrant:v1.18.2"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: QDRANT_INIT_FILE_PATH
+              value: /qdrant/init/.qdrant-initialized
+            - name: QDRANT__SERVICE__API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qdrant-auth
+                  key: api-key
+            - name: QDRANT__SERVICE__READ_ONLY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qdrant-auth
+                  key: read-only-api-key
+          command: ["/bin/bash", "-c"]
+          args:
+          - ./config/initialize.sh
+          ports:
+            - name: http
+              containerPort: 6333
+              protocol: TCP
+            - name: grpc
+              containerPort: 6334
+              protocol: TCP
+            # HA: uncomment for clustered setup
+            # - name: p2p
+            #   containerPort: 6335
+            #   protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: "/readyz"
+              port: 6333
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 2000
+            runAsNonRoot: true
+            runAsUser: 1000
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sleep
+                - "3"
+          volumeMounts:
+          - name: qdrant-storage
+            mountPath: /qdrant/storage
+          - name: qdrant-config
+            mountPath: /qdrant/config/initialize.sh
+            subPath: initialize.sh
+          - name: qdrant-config
+            mountPath: /qdrant/config/production.yaml
+            subPath: production.yaml
+          - name: qdrant-snapshots
+            mountPath: /qdrant/snapshots
+          - name: qdrant-init
+            mountPath: /qdrant/init
+      securityContext:
+        fsGroup: 3000
+        fsGroupChangePolicy: Always
+      serviceAccountName: qdrant
+      volumes:
+        - name: qdrant-config
+          configMap:
+            name: qdrant
+            defaultMode: 0755
+        - name: qdrant-snapshots
+          emptyDir: {}
+        - name: qdrant-init
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: qdrant-storage
+        labels:
+          app: qdrant
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "5Gi"

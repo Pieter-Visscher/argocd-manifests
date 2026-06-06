@@ -1,0 +1,68 @@
+# HA: uncomment headless service for clustered setup (pod DNS + P2P discovery)
+# ---
+# # Source: qdrant/templates/service-headless.yaml
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: qdrant-headless
+#   labels:
+#     app: qdrant
+#     app.kubernetes.io/name: qdrant
+#     app.kubernetes.io/instance: qdrant
+#     app.kubernetes.io/version: "v1.18.2"
+#
+#     app.kubernetes.io/component: cluster-discovery
+# spec:
+#   clusterIP: None
+#   publishNotReadyAddresses: true
+#   ports:
+#     - name: http
+#       port: 6333
+#       targetPort: 6333
+#       protocol: TCP
+#     - name: grpc
+#       port: 6334
+#       targetPort: 6334
+#       protocol: TCP
+#     - name: p2p
+#       port: 6335
+#       targetPort: 6335
+#       protocol: TCP
+#   selector:
+#     app: qdrant
+#     app.kubernetes.io/name: qdrant
+#     app.kubernetes.io/instance: qdrant
+
+---
+# Source: qdrant/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  labels:
+    app: qdrant
+    app.kubernetes.io/name: qdrant
+    app.kubernetes.io/instance: qdrant
+    app.kubernetes.io/version: "v1.18.2"
+    
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 6333
+      targetPort: 6333
+      protocol: TCP
+    - name: grpc
+      port: 6334
+      targetPort: 6334
+      protocol: TCP
+    # HA: uncomment for clustered setup
+    # - name: p2p
+    #   port: 6335
+    #   targetPort: 6335
+    #   protocol: TCP
+  selector:
+    app: qdrant
+    app.kubernetes.io/name: qdrant
+    app.kubernetes.io/instance: qdrant
+
