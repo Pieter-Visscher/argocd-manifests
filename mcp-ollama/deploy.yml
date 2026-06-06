@@ -30,6 +30,7 @@ spec:
             ollama serve &
             until ollama list > /dev/null 2>&1; do sleep 1; done
             ollama list | grep -q bge-m3 || ollama pull bge-m3
+            ollama list | grep -q llama3.2 || ollama pull llama3.2
             wait
         ports:
         - containerPort: 11434
