@@ -27,6 +27,8 @@ spec:
           - /bin/sh
           - -c
           - |
+            cp /certs/ca.crt /usr/local/share/ca-certificates/nauvis-ca.crt
+            update-ca-certificates
             ollama serve &
             until ollama list > /dev/null 2>&1; do sleep 1; done
             ollama list | grep -q bge-m3 || ollama pull registry.nauvis.lan/library/bge-m3
@@ -48,7 +50,15 @@ spec:
         volumeMounts:
         - name: models
           mountPath: /root/.ollama
+        - name: ca-cert
+          mountPath: /certs
       volumes:
         - name: models
           persistentVolumeClaim:
             claimName: mcp-ollama-pvc-models
+        - name: ca-cert
+          secret:
+            secretName: mcp-ollama-ca-secret
+            items:
+              - key: ca.crt
+                path: ca.crt
