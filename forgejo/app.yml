@@ -19,11 +19,11 @@ spec:
     spec:
       initContainers:
       - name: update-ca-certs
-        image: debian:stable-slim
+        image: alpine:latest
         command:
           - sh
           - -c
-          - mkdir -p /usr/local/share/ca-certificates && cp /ca/ca.crt /usr/local/share/ca-certificates/nauvis-lan.crt && update-ca-certificates && cp /etc/ssl/certs/ca-certificates.crt /ca-bundle/
+          - cat /etc/ssl/certs/ca-certificates.crt /ca/ca.crt > /ca-bundle/ca-certificates.crt
         volumeMounts:
           - name: ca-cert
             mountPath: /ca
