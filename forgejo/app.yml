@@ -17,6 +17,18 @@ spec:
       labels:
         app: forgejo
     spec:
+      initContainers:
+      - name: update-ca-certs
+        image: debian:stable-slim
+        command:
+          - sh
+          - -c
+          - cp /ca/ca.crt /usr/local/share/ca-certificates/nauvis-lan.crt && update-ca-certificates && cp /etc/ssl/certs/ca-certificates.crt /ca-bundle/
+        volumeMounts:
+          - name: ca-cert
+            mountPath: /ca
+          - name: ca-bundle
+            mountPath: /ca-bundle
       containers:
       - name: forgejo
         image: codeberg.org/forgejo/forgejo:14
@@ -43,9 +55,9 @@ spec:
           - name: cert
             mountPath: /data/gitea/https/key.pem
             subPath: key.pem
-          - name: ca-cert
-            mountPath: /usr/local/share/ca-certificates/nauvis-lan.crt
-            subPath: ca.crt
+          - name: ca-bundle
+            mountPath: /etc/ssl/certs/ca-certificates.crt
+            subPath: ca-certificates.crt
       volumes:
         - name: data
           persistentVolumeClaim:
@@ -64,3 +76,5 @@ spec:
             items:
             - key: ca.crt
               path: ca.crt
+        - name: ca-bundle
+          emptyDir: {}
