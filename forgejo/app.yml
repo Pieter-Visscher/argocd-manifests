@@ -23,7 +23,7 @@ spec:
         command:
           - sh
           - -c
-          - cp /ca/ca.crt /usr/local/share/ca-certificates/nauvis-lan.crt && update-ca-certificates && cp /etc/ssl/certs/ca-certificates.crt /ca-bundle/
+          - mkdir -p /usr/local/share/ca-certificates && cp /ca/ca.crt /usr/local/share/ca-certificates/nauvis-lan.crt && update-ca-certificates && cp /etc/ssl/certs/ca-certificates.crt /ca-bundle/
         volumeMounts:
           - name: ca-cert
             mountPath: /ca
