@@ -44,11 +44,13 @@ spec:
         ports:
         - containerPort: 11434
         readinessProbe:
-          httpGet:
-            path: /api/tags
-            port: 11434
-          initialDelaySeconds: 10
-          periodSeconds: 5
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - ollama list | grep -q bge-m3
+          initialDelaySeconds: 30
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /api/tags
