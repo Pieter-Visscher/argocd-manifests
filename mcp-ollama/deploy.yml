@@ -1,25 +1,34 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mcp-ollama
   labels:
     app.kubernetes.io/name: ollama
     app.kubernetes.io/part-of: mcp-ollama
 spec:
-  replicas: 1
+  serviceName: mcp-ollama-svc
+  replicas: 3
+  podManagementPolicy: Parallel
   selector:
     matchLabels:
       app.kubernetes.io/name: ollama
       app.kubernetes.io/part-of: mcp-ollama
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
         app.kubernetes.io/name: ollama
         app.kubernetes.io/part-of: mcp-ollama
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: ollama
+                topologyKey: kubernetes.io/hostname
       containers:
       - name: ollama
         image: docker.io/ollama/ollama:latest
@@ -49,7 +58,13 @@ spec:
         volumeMounts:
         - name: models
           mountPath: /root/.ollama
-      volumes:
-        - name: models
-          persistentVolumeClaim:
-            claimName: mcp-ollama-pvc-models
+  volumeClaimTemplates:
+  - metadata:
+      name: models
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: longhorn
