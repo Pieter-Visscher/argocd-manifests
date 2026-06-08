@@ -7,10 +7,7 @@ metadata:
 spec:
   parentRefs:
   - name: homelab-gateway
-    sectionName: https-nauvis
-    namespace: gateway
-  - name: homelab-gateway
-    sectionName: http-nauvis
+    sectionName: https
     namespace: gateway
   hostnames:
   - "ollama.nauvis.lan"
