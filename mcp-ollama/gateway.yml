@@ -1,0 +1,24 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ollama-route
+  namespace: git-mcp
+spec:
+  parentRefs:
+  - name: homelab-gateway
+    sectionName: https-nauvis
+    namespace: gateway
+  - name: homelab-gateway
+    sectionName: http-nauvis
+    namespace: gateway
+  hostnames:
+  - "ollama.nauvis.lan"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: mcp-ollama-svc
+      port: 11434
