@@ -14,7 +14,7 @@ spec:
   rules:
   - matches:
     - path:
-        type: PathPrefiX
+        type: PathPrefix
         value: /
     backendRefs:
     - name: qdrant
