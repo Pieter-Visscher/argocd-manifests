@@ -64,18 +64,29 @@ spec:
                   pieter:test123
                 expire: false
               ssh_pwauth: true
-            networkData: |
-              version: 2
-              ethernets:
-                eth0:
-                  addresses:
-                    - 10.0.200.100/24
-                  routes:
-                    - to: 0.0.0.0/0
-                      via: 10.0.200.1
-                  nameservers:
-                    addresses:
-                      - 10.0.200.1
+              write_files:
+                - path: /etc/NetworkManager/system-connections/eth0.nmconnection
+                  permissions: '0600'
+                  content: |
+                    [connection]
+                    id=eth0
+                    type=ethernet
+                    interface-name=eth0
+
+                    [ethernet]
+
+                    [ipv4]
+                    method=manual
+                    addresses=10.0.200.100/24
+                    gateway=10.0.200.1
+                    dns=10.0.200.1
+                    ignore-auto-dns=true
+
+                    [ipv6]
+                    method=disabled
+              runcmd:
+                - nmcli connection reload
+                - nmcli connection up eth0
 ---
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
