@@ -67,9 +67,7 @@ spec:
             networkData: |
               version: 2
               ethernets:
-                nic0:
-                  match:
-                    driver: virtio_net
+                eth0:
                   addresses:
                     - 10.0.200.100/24
                   routes:
