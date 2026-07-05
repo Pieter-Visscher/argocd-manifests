@@ -53,7 +53,7 @@ spec:
               #cloud-config
               users:
                 - name: pieter
-                  groups: wheel
+                  groups: sudo
                   sudo: ALL=(ALL) NOPASSWD:ALL
                   shell: /bin/bash
                   lock_passwd: false
@@ -65,28 +65,32 @@ spec:
                 expire: false
               ssh_pwauth: true
               write_files:
-                - path: /etc/NetworkManager/system-connections/eth0.nmconnection
+                - path: /etc/docker/daemon.json
+                  content: |
+                    {
+                      "default-address-pools": [
+                        { "base": "172.16.0.0/12", "size": 24 }
+                      ]
+                    }
+                - path: /etc/netplan/99-static.yaml
                   permissions: '0600'
                   content: |
-                    [connection]
-                    id=eth0
-                    type=ethernet
-                    interface-name=eth0
-
-                    [ethernet]
-
-                    [ipv4]
-                    method=manual
-                    addresses=10.0.200.100/24
-                    gateway=10.0.200.1
-                    dns=10.0.200.1
-                    ignore-auto-dns=true
-
-                    [ipv6]
-                    method=disabled
+                    network:
+                      version: 2
+                      ethernets:
+                        eth0:
+                          dhcp4: false
+                          addresses:
+                            - 10.0.200.100/24
+                          routes:
+                            - to: default
+                              via: 10.0.200.1
+                          nameservers:
+                            addresses:
+                              - 10.0.200.1
+                            search: []
               runcmd:
-                - nmcli connection reload
-                - nmcli connection up eth0
+                - netplan apply
 ---
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
@@ -95,7 +99,7 @@ metadata:
 spec:
   source:
     http:
-      url: "https://repo.almalinux.org/almalinux/10/cloud/x86_64_v2/images/AlmaLinux-10-GenericCloud-latest.x86_64_v2.qcow2"
+      url: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
   pvc:
     accessModes:
       - ReadWriteOnce
