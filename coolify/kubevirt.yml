@@ -46,7 +46,7 @@ spec:
       volumes:
         - name: bootdisk
           dataVolume:
-            name: haos-disk-image
+            name: ubuntu-disk-image
         - name: cloudinit
           cloudInitNoCloud:
             userData: |
