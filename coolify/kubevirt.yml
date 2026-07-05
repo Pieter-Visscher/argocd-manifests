@@ -30,6 +30,9 @@ spec:
             - name: bootdisk
               disk:
                 bus: virtio
+            - name: cloudinit
+              disk:
+                bus: virtio
           interfaces:
             - name: default
               bridge: {}
@@ -38,10 +41,26 @@ spec:
             memory: 8Gi
       networks:
         - name: default
+          multus:
+            networkName: services-vlan
       volumes:
         - name: bootdisk
           dataVolume:
             name: haos-disk-image
+        - name: cloudinit
+          cloudInitNoCloud:
+            networkData: |
+              version: 2
+              ethernets:
+                nic0:
+                  match:
+                    driver: virtio_net
+                  addresses:
+                    - 10.0.200.100/24
+                  gateway4: 10.0.200.1
+                  nameservers:
+                    addresses:
+                      - 10.0.200.1
 ---
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
