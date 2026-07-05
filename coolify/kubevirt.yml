@@ -95,7 +95,7 @@ spec:
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
-  name: haos-disk-image
+  name: ubuntu-disk-image
 spec:
   source:
     http:
