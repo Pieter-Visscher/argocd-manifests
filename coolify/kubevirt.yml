@@ -71,7 +71,7 @@ spec:
                   addresses:
                     - 10.0.200.100/24
                   routes:
-                    - to: default
+                    - to: 0.0.0.0/0
                       via: 10.0.200.1
                   nameservers:
                     addresses:
