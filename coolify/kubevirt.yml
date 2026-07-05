@@ -1,0 +1,59 @@
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: coolify
+  labels:
+    app: coolify
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: coolify
+    spec:
+      domain:
+        features:
+          hyperv:
+            relaxed: { enabled: true }
+            vapic: { enabled: true }
+            spinlocks: { enabled: true }
+          acpi: {}
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        cpu:
+          cores: 2
+        devices:
+          disks:
+            - name: bootdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              bridge: {}
+        resources:
+          requests:
+            memory: 8Gi
+      networks:
+        - name: default
+      volumes:
+        - name: bootdisk
+          dataVolume:
+            name: haos-disk-image
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: haos-disk-image
+spec:
+  source:
+    http:
+      url: "https://repo.almalinux.org/almalinux/10/cloud/x86_64_v2/images/AlmaLinux-10-GenericCloud-latest.x86_64_v2.qcow2"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Gi
