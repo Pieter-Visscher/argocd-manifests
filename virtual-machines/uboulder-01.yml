@@ -1,0 +1,101 @@
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: uboulder-01
+  labels:
+    app: uboulder-01
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: uboulder-01
+    spec:
+      domain:
+        features:
+          hyperv:
+            relaxed: { enabled: true }
+            vapic: { enabled: true }
+            spinlocks: { enabled: true }
+          acpi: {}
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        cpu:
+          cores: 4
+        devices:
+          disks:
+            - name: bootdisk
+              disk:
+                bus: virtio
+            - name: cloudinit
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              bridge: {}
+        resources:
+          requests:
+            memory: 4Gi
+      networks:
+        - name: default
+          multus:
+            networkName: services-vlan
+      volumes:
+        - name: bootdisk
+          dataVolume:
+            name: ubuntu-disk-image
+        - name: cloudinit
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              users:
+                - name: pieter
+                  groups: sudo
+                  sudo: ALL=(ALL) NOPASSWD:ALL
+                  shell: /bin/bash
+                  lock_passwd: false
+                  ssh_authorized_keys:
+                    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDFvsL/m5jatpYnbsjYQKf+pBHfcumhgGSquW+IR9DCYRaX6fSelfvtVUjmIwS63pWxYZUU2Z3c5anVkeH1TB2kEhUZ6Aj55WI6HWnyY3K3ZwnR9MYyFqa1T8psF6RAbvlIFVJ0HYg2JjcINsKJ8Y8uijrmt7m+Pk/aciPJe5trOjLcQZt6Ai6fgfnSddH2iehNZ4X+q2Nl6XQmkdRaZ92Z1fZWtERq1nEjNKfXny523O7epkrlwxaVNjJBJqWU9/gT4fvn2xD1FAGumJMwI1xa9dGRUootduB11dBmxyt68ZGlu69oM+iQjPjh/s3Dz7QqS4ZDfABhpyMADRD4QDeTS2f8joRtZl1CPudduZFfx67Q7XBkYLg9l7sIsw37RaLszC0mzYOWCRYYTS8DCoDw7sZDFg9Rma1uZiiy2ddr+rm9jXaVnZOmZGdAYqRDutWPq7masRXQzvwnrV/va3dvXACnSwAQYDthxQq3658JM1FLy2f/ATbzssCwaKJhKb0FJS93oKT/EPKimMkcR6CCO51maSK/WYFi3MKqRFzV6Xc9Di5MdQwY3TrSG/L3NrJ9ZLhs2z38perwbJhzGqvGI3qdWVJ1g2+HIWqdkB+FfXgQR5VTtOh3gl5RGjmxhdWHdog/RElExT2VbDJo1HGHp2TKPomq/G5PqbezYqsQTQ== pieter@Pieters-MacBook-Pro.local
+                    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCrjFcNE+zz2NmejEq04Oo3U2XGAdPGtKa42Q8eIPc8mezQWn9cv+K4DZM4BHomhVf9urPg5ztmEGIykMzBHoWyId/WpyoifYv2je4AkNFyaMSGtovMQzKf6egHNtdukZm8MhlvH0OHURRi09DEbOZNGLi1qJtWOlPb5H8YdHjST0BdzdeouuxLsWa24YooMWEBZilBpqZ5RMCw6SP/KtP0KGH4uNQ5SRPkNUMpAGt/6LdZ1Zj16GMzmdrg2TkLTNXnmJokGfe6HOrJkQ2w63vsxW6dX2uop3PDfswdhsefc5zFeATK0/mrrpTvOLZxN8U3/hf+DlmNDPZT/dLhmWCH5rn6PbS0RwEVI8qM2MSHcIVBquIlq1ham0YaZrS8aHW48LZ8JsN+fYHA/X6qS5mXmGOEKbskcJAg1VudiDA1mu7DPCvQ9B+iefvvBOmT8yad8Y1a9QTn561ptTOhGBpgHhjx0nwMJPYRZbMlhj4NMBNKsjMNQRqwn8wIxaJ5qBk= pieter@debian
+              ssh_pwauth: true
+	      write_files:
+                - path: /etc/NetworkManager/system-connections/eth0.nmconnection
+                  permissions: '0600'
+                  content: |
+                    [connection]
+                    id=eth0
+                    type=ethernet
+                    interface-name=eth0
+
+                    [ethernet]
+
+                    [ipv4]
+                    method=manual
+                    addresses=10.0.200.101/24
+                    gateway=10.0.200.1
+                    dns=10.0.200.1
+                    ignore-auto-dns=true
+
+                    [ipv6]
+                    method=disabled
+              runcmd:
+                - nmcli connection reload
+                - nmcli connection up eth0
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: uboulder-web01-disk-image
+spec:
+  source:
+    http:
+      url: "https://repo.almalinux.org/almalinux/10/cloud/x86_64_v2/images/AlmaLinux-10-GenericCloud-latest.x86_64_v2.qcow2"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Gi
