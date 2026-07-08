@@ -5,6 +5,8 @@ metadata:
   name: uboulder-01
   labels:
     app: uboulder-01
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
 spec:
   running: true
   template:
