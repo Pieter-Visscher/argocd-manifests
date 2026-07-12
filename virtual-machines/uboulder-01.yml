@@ -49,6 +49,17 @@ spec:
             name: uboulder-web01-disk-image
         - name: cloudinit
           cloudInitNoCloud:
+            networkData: |
+              version: 2
+              ethernets:
+                eth0:
+                  dhcp4: false
+                  addresses:
+                    - 10.0.200.101/24
+                  gateway4: 10.0.200.1
+                  nameservers:
+                    addresses:
+                      - 10.0.200.1
             userData: |
               #cloud-config
               users:
@@ -66,29 +77,6 @@ spec:
                     password: test123
                     type: text
               ssh_pwauth: true
-              write_files:
-                - path: /etc/NetworkManager/system-connections/eth0.nmconnection
-                  permissions: '0600'
-                  content: |
-                    [connection]
-                    id=eth0
-                    type=ethernet
-                    interface-name=eth0
-
-                    [ethernet]
-
-                    [ipv4]
-                    method=manual
-                    addresses=10.0.200.101/24
-                    gateway=10.0.200.1
-                    dns=10.0.200.1
-                    ignore-auto-dns=true
-
-                    [ipv6]
-                    method=disabled
-              runcmd:
-                - nmcli connection reload
-                - nmcli connection up eth0
 ---
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
