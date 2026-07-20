@@ -1,0 +1,93 @@
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: pasworld
+  labels:
+    app: pasworld
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: pasworld
+    spec:
+      domain:
+        features:
+          hyperv:
+            relaxed: { enabled: true }
+            vapic: { enabled: true }
+            spinlocks: { enabled: true }
+          acpi: {}
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        cpu:
+          cores: 4
+        devices:
+          disks:
+            - name: bootdisk
+              disk:
+                bus: virtio
+            - name: cloudinit
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              bridge: {}
+        resources:
+          requests:
+            memory: 4Gi
+      networks:
+        - name: default
+          multus:
+            networkName: services-vlan
+      volumes:
+        - name: bootdisk
+          dataVolume:
+            name: palworld-disk-image
+        - name: cloudinit
+          cloudInitNoCloud:
+            networkData: |
+              version: 2
+              ethernets:
+                enp1s0:
+                  addresses:
+                    - 10.0.200.102/24
+                  gateway4: 10.0.200.1
+                  nameservers:
+                    addresses:
+                      - 10.0.200.1
+            userData: |
+              #cloud-config
+              users:
+                - name: palworld
+                  groups: sudo
+                  sudo: ALL=(ALL) NOPASSWD:ALL
+                  shell: /bin/bash
+                  lock_passwd: false
+                  ssh_authorized_keys:
+                    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCrjFcNE+zz2NmejEq04Oo3U2XGAdPGtKa42Q8eIPc8mezQWn9cv+K4DZM4BHomhVf9urPg5ztmEGIykMzBHoWyId/WpyoifYv2je4AkNFyaMSGtovMQzKf6egHNtdukZm8MhlvH0OHURRi09DEbOZNGLi1qJtWOlPb5H8YdHjST0BdzdeouuxLsWa24YooMWEBZilBpqZ5RMCw6SP/KtP0KGH4uNQ5SRPkNUMpAGt/6LdZ1Zj16GMzmdrg2TkLTNXnmJokGfe6HOrJkQ2w63vsxW6dX2uop3PDfswdhsefc5zFeATK0/mrrpTvOLZxN8U3/hf+DlmNDPZT/dLhmWCH5rn6PbS0RwEVI8qM2MSHcIVBquIlq1ham0YaZrS8aHW48LZ8JsN+fYHA/X6qS5mXmGOEKbskcJAg1VudiDA1mu7DPCvQ9B+iefvvBOmT8yad8Y1a9QTn561ptTOhGBpgHhjx0nwMJPYRZbMlhj4NMBNKsjMNQRqwn8wIxaJ5qBk= pieter@debian
+              chpasswd:
+                expire: false
+                users:
+                  - name: palworld
+                    password: c4SeBsMnBm
+                    type: text
+              ssh_pwauth: true
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: palworld-disk-image
+spec:
+  source:
+    http:
+      url: "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Gi
