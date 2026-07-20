@@ -24,7 +24,7 @@ spec:
             efi:
               secureBoot: false
         cpu:
-          cores: 4
+          cores: 8
         devices:
           disks:
             - name: bootdisk
@@ -38,7 +38,7 @@ spec:
               bridge: {}
         resources:
           requests:
-            memory: 4Gi
+            memory: 16Gi
       networks:
         - name: default
           multus:
