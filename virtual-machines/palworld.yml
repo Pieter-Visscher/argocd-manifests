@@ -2,15 +2,15 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: pasworld
+  name: palworld
   labels:
-    app: pasworld
+    app: palworld
 spec:
   running: true
   template:
     metadata:
       labels:
-        kubevirt.io/domain: pasworld
+        kubevirt.io/domain: palworld
     spec:
       domain:
         features:
