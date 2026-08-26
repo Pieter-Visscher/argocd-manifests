@@ -175,7 +175,7 @@ spec:
         - containerPort: 8000
         env:
         - name: PAPERLESS_TASK_WORKERS
-          value: 2
+          value: "2"
         - name: PAPERLESS_OUTLOOK_OAUTH_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
