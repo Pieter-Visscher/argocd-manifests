@@ -106,8 +106,14 @@ data:
       }
     }
 
+    // loki.source.file does not expand globs itself; local.file_match watches
+    // the filesystem and turns the __path__ glob into concrete file targets.
+    local.file_match "pod_logs" {
+      path_targets = discovery.relabel.pod_logs.output
+    }
+
     loki.source.file "pod_logs" {
-      targets    = discovery.relabel.pod_logs.output
+      targets    = local.file_match.pod_logs.targets
       forward_to = [loki.write.default.receiver]
     }
 
