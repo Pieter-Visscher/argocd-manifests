@@ -195,6 +195,10 @@ data:
   # Plugin selection — the operator reads these keys from this same ConfigMap
   vulnerabilityReports.scanner:               Trivy
   configAuditReports.scanner:                 Trivy
+  # OCI reference of the Trivy checks bundle. Without this the node/infra
+  # scanners crash with "could not parse reference: " and "no compliance
+  # commands found". Matches the upstream helm chart default.
+  policies.bundle.oci.ref:                    mirror.gcr.io/aquasec/trivy-checks:1
 ---
 apiVersion: v1
 kind: ConfigMap
