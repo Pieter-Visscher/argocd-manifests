@@ -1,0 +1,40 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: immich-api
+  namespace: monitoring          # must match your Prometheus operator's namespace selector
+  labels:
+    release: prometheus          # must match your Prometheus CR's serviceMonitorSelector
+spec:
+  namespaceSelector:
+    matchNames:
+      - immich                   # namespace where Immich runs
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: immich   # adjust to match your Service's labels
+  endpoints:
+    - port: metrics-api          # matches your service port name
+      path: /metrics
+      interval: 30s
+      scheme: http
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: immich-microservices
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - immich
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: immich
+  endpoints:
+    - port: metrics-ms           # matches your service port name
+      path: /metrics
+      interval: 30s
+      scheme: http

@@ -1,0 +1,92 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cilium-rules
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: cilium
+    app.kubernetes.io/part-of: cilium
+    prometheus: k8s
+    role: alert-rules
+spec:
+  groups:
+  - name: cilium
+    rules:
+    - alert: CiliumAgentDown
+      annotations:
+        description: Cilium agent on {{ $labels.instance }} is down.
+        summary: Cilium agent is down.
+      expr: up{job="cilium-agent"} == 0
+      for: 2m
+      labels:
+        severity: critical
+
+    - alert: CiliumOperatorDown
+      annotations:
+        description: Cilium operator is down.
+        summary: Cilium operator is down.
+      expr: up{job="cilium-operator"} == 0
+      for: 2m
+      labels:
+        severity: critical
+
+    - alert: CiliumHighDropRate
+      annotations:
+        description: 'Cilium on {{ $labels.instance }} is dropping packets at {{ printf "%.0f" $value }} pps. Reason: {{ $labels.reason }}.'
+        summary: Cilium is dropping packets at a high rate.
+      expr: |
+        sum by (instance, reason) (rate(cilium_drop_count_total[5m])) > 100
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CiliumUnhealthyEndpoints
+      annotations:
+        description: '{{ $value }} unhealthy endpoints on {{ $labels.instance }}.'
+        summary: Cilium has unhealthy endpoints.
+      expr: |
+        cilium_endpoint_state{endpoint_state="not-ready"} > 0
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CiliumBPFMapPressure
+      annotations:
+        description: 'Cilium BPF map {{ $labels.map_name }} on {{ $labels.instance }} is {{ printf "%.0f" $value }}% full.'
+        summary: Cilium BPF map is filling up.
+      expr: |
+        cilium_bpf_map_pressure > 0.90
+      for: 10m
+      labels:
+        severity: critical
+
+    - alert: CiliumBPFMapPressureWarning
+      annotations:
+        description: 'Cilium BPF map {{ $labels.map_name }} on {{ $labels.instance }} is {{ printf "%.0f" $value }}% full.'
+        summary: Cilium BPF map is filling up.
+      expr: |
+        cilium_bpf_map_pressure > 0.85
+      for: 10m
+      labels:
+        severity: warning
+
+    - alert: CiliumHighErrorRate
+      annotations:
+        description: 'Cilium agent on {{ $labels.instance }} has a high error rate: {{ printf "%.2f" $value }} errors/s.'
+        summary: Cilium agent is reporting a high error rate.
+      expr: |
+        sum by (instance) (rate(cilium_errors_warnings_total{level="error"}[5m])) > 1
+      for: 10m
+      labels:
+        severity: warning
+
+    - alert: HubbleFlowsDropping
+      annotations:
+        description: 'Hubble on {{ $labels.instance }} is dropping flows at {{ printf "%.0f" $value }} flows/s.'
+        summary: Hubble is dropping flows.
+      expr: |
+        rate(hubble_drop_total[5m]) > 50
+      for: 5m
+      labels:
+        severity: warning

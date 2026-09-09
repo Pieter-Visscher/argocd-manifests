@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bitwarden
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitwarden.com
+    targetRevision: 2.0.0
+    chart: sm-operator
+    helm:
+      valuesObject:
+        settings:
+          cloudRegion: EU
+  destination:
+    namespace: bitwarden
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

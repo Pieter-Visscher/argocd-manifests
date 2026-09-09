@@ -1,0 +1,15 @@
+#apiVersion: v1
+#data:
+#  name.json: |-
+#    json here
+#kind: ConfigMap
+#metadata:
+#  labels:
+#    app.kubernetes.io/component: grafana
+#    app.kubernetes.io/name: grafana
+#    app.kubernetes.io/part-of: kube-prometheus
+#    app.kubernetes.io/version: 12.4.0
+#  name: grafana-dashboard-name
+#  namespace: monitoring
+#
+#  use kubectl create / replace instead of apply to not get limited by metadata.annotations

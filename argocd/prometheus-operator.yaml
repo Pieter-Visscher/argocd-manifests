@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-operator
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: ssh://git@git.pieter.fish/pieter/argocd-manifests.git
+    targetRevision: HEAD
+    path: prometheus-operator/
+    kustomize: {}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    managedNamespaceMetadata:
+      labels:
+        gateway-access: true
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNameSpace=true
+      - ServerSideApply=true
