@@ -57,7 +57,7 @@ spec:
   syncPolicy:
     managedNamespaceMetadata:
       labels:
-        gateway-access: true
+        gateway-access: "true"
     automated:
       selfHeal: true
     syncOptions:

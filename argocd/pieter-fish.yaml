@@ -17,7 +17,7 @@ spec:
   syncPolicy:
     managedNamespaceMetadata:
       labels:
-        wan-gateway-access: true
+        wan-gateway-access: "true"
     automated:
       selfHeal: true
     syncOptions:
