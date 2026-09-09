@@ -25,9 +25,13 @@ metadata:
   name: grafana-https-route
 spec:
   parentRefs:
-  - name: homelab-gateway
+  # group/kind are defaulted by the Gateway API admission controller; write
+  # them out so ArgoCD doesn't see the defaulted live fields as drift.
+  - group:       gateway.networking.k8s.io
+    kind:        Gateway
+    name:        homelab-gateway
+    namespace:   gateway
     sectionName: https
-    namespace: gateway
   hostnames:
   - "grafana.nauvis.lan"
   rules:
@@ -36,7 +40,10 @@ spec:
         type: PathPrefix
         value: /
     backendRefs:
-    - name: grafana
-      port: 3000
+    - group:  ""
+      kind:   Service
+      name:   grafana
+      port:   3000
+      weight: 1
 
 
