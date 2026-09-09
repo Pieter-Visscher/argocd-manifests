@@ -49,7 +49,7 @@ data:
           "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"Critical\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  (kube_replicaset_spec_replicas > 0)\n) or sum(trivy_image_vulnerabilities{severity=\"Critical\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
+            "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"Critical\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  label_replace(\n    label_replace(kube_replicaset_spec_replicas > 0, \"resource_name\", \"$1\", \"replicaset\", \"(.*)\"),\n    \"exported_namespace\", \"$1\", \"namespace\", \"(.*)\"\n  )\n) or sum(trivy_image_vulnerabilities{severity=\"Critical\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
             "refId": "A"
           }],
           "fieldConfig": {
@@ -69,7 +69,7 @@ data:
           "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"High\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  (kube_replicaset_spec_replicas > 0)\n) or sum(trivy_image_vulnerabilities{severity=\"High\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
+            "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"High\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  label_replace(\n    label_replace(kube_replicaset_spec_replicas > 0, \"resource_name\", \"$1\", \"replicaset\", \"(.*)\"),\n    \"exported_namespace\", \"$1\", \"namespace\", \"(.*)\"\n  )\n) or sum(trivy_image_vulnerabilities{severity=\"High\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
             "refId": "A"
           }],
           "fieldConfig": {
@@ -112,17 +112,17 @@ data:
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [
             {
-              "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"Critical\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  (kube_replicaset_spec_replicas > 0)\n) or sum(trivy_image_vulnerabilities{severity=\"Critical\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
+              "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"Critical\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  label_replace(\n    label_replace(kube_replicaset_spec_replicas > 0, \"resource_name\", \"$1\", \"replicaset\", \"(.*)\"),\n    \"exported_namespace\", \"$1\", \"namespace\", \"(.*)\"\n  )\n) or sum(trivy_image_vulnerabilities{severity=\"Critical\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
               "legendFormat": "Critical",
               "refId": "A"
             },
             {
-              "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"High\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  (kube_replicaset_spec_replicas > 0)\n) or sum(trivy_image_vulnerabilities{severity=\"High\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
+              "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"High\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  label_replace(\n    label_replace(kube_replicaset_spec_replicas > 0, \"resource_name\", \"$1\", \"replicaset\", \"(.*)\"),\n    \"exported_namespace\", \"$1\", \"namespace\", \"(.*)\"\n  )\n) or sum(trivy_image_vulnerabilities{severity=\"High\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
               "legendFormat": "High",
               "refId": "B"
             },
             {
-              "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"Medium\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  (kube_replicaset_spec_replicas > 0)\n) or sum(trivy_image_vulnerabilities{severity=\"Medium\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
+              "expr": "sum(\n  trivy_image_vulnerabilities{severity=\"Medium\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  label_replace(\n    label_replace(kube_replicaset_spec_replicas > 0, \"resource_name\", \"$1\", \"replicaset\", \"(.*)\"),\n    \"exported_namespace\", \"$1\", \"namespace\", \"(.*)\"\n  )\n) or sum(trivy_image_vulnerabilities{severity=\"Medium\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
               "legendFormat": "Medium",
               "refId": "C"
             }
@@ -143,7 +143,7 @@ data:
           "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum by (severity) (\n  trivy_image_vulnerabilities{severity=~\"Critical|High|Medium\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  (kube_replicaset_spec_replicas > 0)\n) or sum by (severity) (trivy_image_vulnerabilities{severity=~\"Critical|High|Medium\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
+            "expr": "sum by (severity) (\n  trivy_image_vulnerabilities{severity=~\"Critical|High|Medium\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  label_replace(\n    label_replace(kube_replicaset_spec_replicas > 0, \"resource_name\", \"$1\", \"replicaset\", \"(.*)\"),\n    \"exported_namespace\", \"$1\", \"namespace\", \"(.*)\"\n  )\n) or sum by (severity) (trivy_image_vulnerabilities{severity=~\"Critical|High|Medium\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
             "legendFormat": "{{severity}}",
             "refId": "A"
           }],
@@ -155,7 +155,7 @@ data:
           "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "topk(20, sum by (image_repository, image_tag, exported_namespace) (\n  trivy_image_vulnerabilities{severity=~\"Critical|High\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  (kube_replicaset_spec_replicas > 0)\n) or sum by (image_repository, image_tag, exported_namespace) (trivy_image_vulnerabilities{severity=~\"Critical|High\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"}))",
+            "expr": "topk(20, sum by (image_repository, image_tag, exported_namespace) (\n  trivy_image_vulnerabilities{severity=~\"Critical|High\", exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  label_replace(\n    label_replace(kube_replicaset_spec_replicas > 0, \"resource_name\", \"$1\", \"replicaset\", \"(.*)\"),\n    \"exported_namespace\", \"$1\", \"namespace\", \"(.*)\"\n  )\n) or sum by (image_repository, image_tag, exported_namespace) (trivy_image_vulnerabilities{severity=~\"Critical|High\", exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"}))",
             "instant": true,
             "format": "table",
             "refId": "A"
@@ -173,7 +173,7 @@ data:
           "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum by (exported_namespace, severity) (\n  trivy_image_vulnerabilities{exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  (kube_replicaset_spec_replicas > 0)\n) or sum by (exported_namespace, severity) (trivy_image_vulnerabilities{exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
+            "expr": "sum by (exported_namespace, severity) (\n  trivy_image_vulnerabilities{exported_namespace=~\"$namespace\", resource_kind=\"ReplicaSet\"}\n  * on(resource_name, exported_namespace) group_left()\n  label_replace(\n    label_replace(kube_replicaset_spec_replicas > 0, \"resource_name\", \"$1\", \"replicaset\", \"(.*)\"),\n    \"exported_namespace\", \"$1\", \"namespace\", \"(.*)\"\n  )\n) or sum by (exported_namespace, severity) (trivy_image_vulnerabilities{exported_namespace=~\"$namespace\", resource_kind!=\"ReplicaSet\"})",
             "instant": true,
             "format": "table",
             "refId": "A"
