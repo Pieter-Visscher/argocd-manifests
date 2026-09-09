@@ -111,6 +111,47 @@ subjects:
   name:      trivy-operator
   namespace: trivy-system
 ---
+# Namespace-scoped write access the operator needs inside its own namespace:
+# ConfigMaps for scan-job bookkeeping/cache, Secrets for pull creds, Leases
+# for leader election.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name:      trivy-operator
+  namespace: trivy-system
+  labels:
+    app.kubernetes.io/name:    trivy-operator
+    app.kubernetes.io/part-of: trivy-operator
+    app.kubernetes.io/version: 0.23.0
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name:      trivy-operator
+  namespace: trivy-system
+  labels:
+    app.kubernetes.io/name:    trivy-operator
+    app.kubernetes.io/part-of: trivy-operator
+    app.kubernetes.io/version: 0.23.0
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind:      Role
+  name:      trivy-operator
+subjects:
+- kind:      ServiceAccount
+  name:      trivy-operator
+  namespace: trivy-system
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
