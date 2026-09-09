@@ -210,6 +210,15 @@ metadata:
     app.kubernetes.io/part-of: trivy-operator
     app.kubernetes.io/version: 0.23.0
 data:
+  # Trivy scan-job image (dotted keys — required by the trivy plugin loader).
+  trivy.repository:        ghcr.io/aquasecurity/trivy
+  trivy.tag:               "0.57.1"
+  trivy.severity:          CRITICAL,HIGH,MEDIUM
+  trivy.mode:              Standalone
+  trivy.timeout:           5m0s
+  trivy.dbRepository:      ghcr.io/aquasecurity/trivy-db
+  trivy.javaDbRepository:  ghcr.io/aquasecurity/trivy-java-db
+  # Also expose the classic TRIVY_* env vars for the trivy CLI subprocess.
   TRIVY_SEVERITY:          CRITICAL,HIGH,MEDIUM
   TRIVY_MODE:              Standalone
   TRIVY_TIMEOUT:           5m0s
@@ -281,6 +290,14 @@ spec:
             drop:
             - ALL
           readOnlyRootFilesystem: true
+        volumeMounts:
+        # The policy loader unpacks the OCI checks bundle into /tmp; the
+        # root filesystem is read-only, so mount an emptyDir there.
+        - name:      tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
