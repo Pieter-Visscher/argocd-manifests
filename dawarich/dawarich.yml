@@ -58,7 +58,7 @@ spec:
               value: "5"
             - name: RAILS_MAX_THREADS
               value: "10"
-          image: freikin/dawarich:1.9.1
+          image: freikin/dawarich:1.14.4
           imagePullPolicy: Always
           volumeMounts:
             - mountPath: /var/app/public
@@ -119,7 +119,7 @@ spec:
               value: photon.komoot.io
             - name: PHOTON_API_USE_HTTPS
               value: "true"
-          image: freikin/dawarich:1.9.1
+          image: freikin/dawarich:1.14.4
           imagePullPolicy: Always
           volumeMounts:
             - mountPath: /var/app/public
