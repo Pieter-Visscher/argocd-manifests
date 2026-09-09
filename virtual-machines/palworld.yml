@@ -6,7 +6,7 @@ metadata:
   labels:
     app: palworld
 spec:
-  running: true
+  running: false
   template:
     metadata:
       labels:

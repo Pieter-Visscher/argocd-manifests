@@ -6,7 +6,7 @@ metadata:
   labels:
     app: uboulder-01
 spec:
-  running: true
+  running: false
   template:
     metadata:
       labels:
