@@ -64,9 +64,13 @@ metadata:
     app.kubernetes.io/version:   1.8.0
 data:
   config.alloy: |
-    // Discover all pods across all namespaces
+    // Discover pods on this node only via Kubernetes field selector
     discovery.kubernetes "pods" {
       role = "pod"
+      selectors {
+        role  = "pod"
+        field = "spec.nodeName=" + env("NODE_NAME")
+      }
     }
 
     // Relabel pod metadata into Loki stream labels and derive log file paths
@@ -92,12 +96,6 @@ data:
       rule {
         source_labels = ["__meta_kubernetes_pod_node_name"]
         target_label  = "node"
-      }
-      // Only keep pods scheduled on this node
-      rule {
-        action        = "keep"
-        source_labels = ["__meta_kubernetes_pod_node_name"]
-        regex         = env("NODE_NAME")
       }
       // Build the log file path from pod UID and container name
       rule {
