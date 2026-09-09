@@ -91,6 +91,9 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/longhorn
           name: grafana-dashboard-longhorn
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/trivy
+          name: grafana-dashboard-trivy
+          readOnly: false
       securityContext:
         fsGroup: 65534
         runAsGroup: 65534
@@ -127,6 +130,9 @@ spec:
       - configMap:
           name: grafana-dashboard-longhorn
         name: grafana-dashboard-longhorn
+      - configMap:
+          name: grafana-dashboard-trivy
+        name: grafana-dashboard-trivy
 ---
 apiVersion: v1
 kind: Secret

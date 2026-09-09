@@ -176,6 +176,17 @@ data:
   OPERATOR_INFRA_ASSESSMENT_SCANNER_ENABLED:  "true"
   OPERATOR_EXPOSED_SECRET_SCANNER_ENABLED:    "true"
   OPERATOR_SBOM_GENERATION_ENABLED:           "false"
+  # v0.23.0 crashloops on ClusterComplianceReport cache sync; disable that
+  # controller — we don't consume compliance reports in Grafana.
+  OPERATOR_CLUSTER_COMPLIANCE_ENABLED:        "false"
+  # Built-in per-finding Prometheus metrics (trivy_image_vulnerabilities,
+  # trivy_resource_configaudits, etc.) for Grafana dashboards.
+  OPERATOR_METRICS_FINDINGS_ENABLED:                "true"
+  OPERATOR_METRICS_CONFIG_AUDIT_INFO_ENABLED:       "true"
+  OPERATOR_METRICS_EXPOSED_SECRET_INFO_ENABLED:     "true"
+  OPERATOR_METRICS_RBAC_ASSESSMENT_INFO_ENABLED:    "true"
+  OPERATOR_METRICS_INFRA_ASSESSMENT_INFO_ENABLED:   "true"
+  OPERATOR_METRICS_IMAGE_INFO_ENABLED:              "true"
   # Plugin selection — the operator reads these keys from this same ConfigMap
   vulnerabilityReports.scanner:               Trivy
   configAuditReports.scanner:                 Trivy

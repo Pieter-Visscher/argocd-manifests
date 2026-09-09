@@ -1,0 +1,179 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/name:      grafana
+    app.kubernetes.io/part-of:   kube-prometheus
+    app.kubernetes.io/version:   12.4.0
+  name:      grafana-dashboard-trivy
+  namespace: monitoring
+data:
+  trivy.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "schemaVersion": 39,
+      "style": "dark",
+      "tags": ["trivy", "security"],
+      "time": { "from": "now-1h", "to": "now" },
+      "timezone": "browser",
+      "title": "Trivy — Cluster Findings",
+      "uid": "trivy-operator",
+      "templating": {
+        "list": [
+          {
+            "name": "datasource",
+            "type": "datasource",
+            "query": "prometheus",
+            "hide": 0,
+            "current": { "text": "Prometheus", "value": "Prometheus" }
+          },
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "query": "label_values(trivy_image_vulnerabilities, namespace)",
+            "refresh": 2,
+            "includeAll": true,
+            "multi": true,
+            "current": { "text": "All", "value": "$__all" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Vulnerabilities — Critical",
+          "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [{
+            "expr": "sum(trivy_image_vulnerabilities{severity=\"Critical\", namespace=~\"$namespace\"})",
+            "refId": "A"
+          }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "red", "value": 1 }
+              ]},
+              "color": { "mode": "thresholds" }
+            }
+          },
+          "options": { "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "type": "stat",
+          "title": "Vulnerabilities — High",
+          "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [{
+            "expr": "sum(trivy_image_vulnerabilities{severity=\"High\", namespace=~\"$namespace\"})",
+            "refId": "A"
+          }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "orange", "value": 1 }
+              ]},
+              "color": { "mode": "thresholds" }
+            }
+          },
+          "options": { "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "type": "stat",
+          "title": "Config Audit failures",
+          "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [{
+            "expr": "sum(trivy_resource_configaudits{severity=~\"Critical|High\", namespace=~\"$namespace\"})",
+            "refId": "A"
+          }],
+          "options": { "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "type": "stat",
+          "title": "Exposed secrets",
+          "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [{
+            "expr": "sum(trivy_image_exposedsecrets{namespace=~\"$namespace\"})",
+            "refId": "A"
+          }],
+          "options": { "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "type": "bargauge",
+          "title": "Vulnerabilities by severity",
+          "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [{
+            "expr": "sum by (severity) (trivy_image_vulnerabilities{namespace=~\"$namespace\"})",
+            "legendFormat": "{{severity}}",
+            "refId": "A"
+          }],
+          "options": { "orientation": "horizontal", "displayMode": "gradient" }
+        },
+        {
+          "type": "table",
+          "title": "Top vulnerable images (Critical + High)",
+          "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [{
+            "expr": "topk(20, sum by (image_repository, image_tag, namespace) (trivy_image_vulnerabilities{severity=~\"Critical|High\", namespace=~\"$namespace\"}))",
+            "instant": true,
+            "format": "table",
+            "refId": "A"
+          }],
+          "transformations": [
+            { "id": "organize", "options": {
+              "excludeByName": { "Time": true, "__name__": true },
+              "renameByName": { "Value": "vulnerabilities" }
+            }}
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Vulnerabilities by namespace",
+          "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [{
+            "expr": "sum by (namespace, severity) (trivy_image_vulnerabilities{namespace=~\"$namespace\"})",
+            "instant": true,
+            "format": "table",
+            "refId": "A"
+          }],
+          "transformations": [
+            { "id": "organize", "options": { "excludeByName": { "Time": true } } },
+            { "id": "groupingToMatrix", "options": {
+              "columnField": "severity",
+              "rowField": "namespace",
+              "valueField": "Value"
+            }}
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Config audit findings by namespace",
+          "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [{
+            "expr": "sum by (namespace, severity) (trivy_resource_configaudits{namespace=~\"$namespace\"})",
+            "instant": true,
+            "format": "table",
+            "refId": "A"
+          }],
+          "transformations": [
+            { "id": "organize", "options": { "excludeByName": { "Time": true } } },
+            { "id": "groupingToMatrix", "options": {
+              "columnField": "severity",
+              "rowField": "namespace",
+              "valueField": "Value"
+            }}
+          ]
+        }
+      ]
+    }
