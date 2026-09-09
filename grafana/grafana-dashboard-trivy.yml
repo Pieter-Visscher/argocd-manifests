@@ -34,7 +34,7 @@ data:
             "name": "namespace",
             "type": "query",
             "datasource": { "type": "prometheus", "uid": "${datasource}" },
-            "query": "label_values(trivy_image_vulnerabilities, namespace)",
+            "query": "label_values(trivy_image_vulnerabilities, exported_namespace)",
             "refresh": 2,
             "includeAll": true,
             "multi": true,
@@ -49,7 +49,7 @@ data:
           "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum(trivy_image_vulnerabilities{severity=\"Critical\", namespace=~\"$namespace\"})",
+            "expr": "sum(trivy_image_vulnerabilities{severity=\"Critical\", exported_namespace=~\"$namespace\"})",
             "refId": "A"
           }],
           "fieldConfig": {
@@ -69,7 +69,7 @@ data:
           "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum(trivy_image_vulnerabilities{severity=\"High\", namespace=~\"$namespace\"})",
+            "expr": "sum(trivy_image_vulnerabilities{severity=\"High\", exported_namespace=~\"$namespace\"})",
             "refId": "A"
           }],
           "fieldConfig": {
@@ -89,7 +89,7 @@ data:
           "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum(trivy_resource_configaudits{severity=~\"Critical|High\", namespace=~\"$namespace\"})",
+            "expr": "sum(trivy_resource_configaudits{severity=~\"Critical|High\", exported_namespace=~\"$namespace\"})",
             "refId": "A"
           }],
           "options": { "colorMode": "background", "graphMode": "none" }
@@ -100,7 +100,7 @@ data:
           "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum(trivy_image_exposedsecrets{namespace=~\"$namespace\"})",
+            "expr": "sum(trivy_image_exposedsecrets{exported_namespace=~\"$namespace\"})",
             "refId": "A"
           }],
           "options": { "colorMode": "background", "graphMode": "none" }
@@ -111,7 +111,7 @@ data:
           "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum by (severity) (trivy_image_vulnerabilities{namespace=~\"$namespace\"})",
+            "expr": "sum by (severity) (trivy_image_vulnerabilities{exported_namespace=~\"$namespace\"})",
             "legendFormat": "{{severity}}",
             "refId": "A"
           }],
@@ -123,7 +123,7 @@ data:
           "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "topk(20, sum by (image_repository, image_tag, namespace) (trivy_image_vulnerabilities{severity=~\"Critical|High\", namespace=~\"$namespace\"}))",
+            "expr": "topk(20, sum by (image_repository, image_tag, exported_namespace) (trivy_image_vulnerabilities{severity=~\"Critical|High\", exported_namespace=~\"$namespace\"}))",
             "instant": true,
             "format": "table",
             "refId": "A"
@@ -141,7 +141,7 @@ data:
           "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum by (namespace, severity) (trivy_image_vulnerabilities{namespace=~\"$namespace\"})",
+            "expr": "sum by (exported_namespace, severity) (trivy_image_vulnerabilities{exported_namespace=~\"$namespace\"})",
             "instant": true,
             "format": "table",
             "refId": "A"
@@ -150,7 +150,7 @@ data:
             { "id": "organize", "options": { "excludeByName": { "Time": true } } },
             { "id": "groupingToMatrix", "options": {
               "columnField": "severity",
-              "rowField": "namespace",
+              "rowField": "exported_namespace",
               "valueField": "Value"
             }}
           ]
@@ -161,7 +161,7 @@ data:
           "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "sum by (namespace, severity) (trivy_resource_configaudits{namespace=~\"$namespace\"})",
+            "expr": "sum by (exported_namespace, severity) (trivy_resource_configaudits{exported_namespace=~\"$namespace\"})",
             "instant": true,
             "format": "table",
             "refId": "A"
@@ -170,7 +170,7 @@ data:
             { "id": "organize", "options": { "excludeByName": { "Time": true } } },
             { "id": "groupingToMatrix", "options": {
               "columnField": "severity",
-              "rowField": "namespace",
+              "rowField": "exported_namespace",
               "valueField": "Value"
             }}
           ]
