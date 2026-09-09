@@ -25,7 +25,17 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-      - env: []
+      - env:
+        - name: GF_SECURITY_ADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: grafana-secret
+              key:  GF_SECURITY_ADMIN_USER
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: grafana-secret
+              key:  GF_SECURITY_ADMIN_PASSWORD
         image: grafana/grafana:12.4.0
         name: grafana
         ports:
@@ -87,8 +97,9 @@ spec:
         runAsNonRoot: true
         runAsUser: 65534
       volumes:
-      - emptyDir: {}
-        name: grafana-storage
+      - name: grafana-storage
+        persistentVolumeClaim:
+          claimName: grafana-data-pvc
       - name: grafana-datasources
         secret:
           secretName: grafana-datasources
@@ -186,6 +197,15 @@ stringData:
                 "orgId": 1,
                 "type": "prometheus",
                 "url": "http://prometheus-operated.monitoring.svc:9090",
+                "version": 1
+            },
+            {
+                "access": "proxy",
+                "editable": false,
+                "name": "loki",
+                "orgId": 1,
+                "type": "loki",
+                "url": "http://loki.monitoring.svc:3100",
                 "version": 1
             }
         ]
