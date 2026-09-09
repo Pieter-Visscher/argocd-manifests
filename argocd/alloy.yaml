@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: ssh://git@git.pieter.fish/pieter/argocd-manifests.git
-    targetRevision: HEAD
+    targetRevision: alot
     path: alloy/
     directory:
       recurse: true
