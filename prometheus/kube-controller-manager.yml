@@ -1,0 +1,59 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-controller-manager
+  namespace: kube-system
+  labels:
+    k8s-app: kube-controller-manager
+spec:
+  ipFamilyPolicy: SingleStack
+  ipFamilies:
+    - IPv4
+  clusterIP: None
+  ports:
+  - name: https-metrics
+    port: 10257
+    targetPort: 10257
+    protocol: TCP
+  selector:
+    k8s-app: kube-controller-manager
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/name: kube-controller-manager
+    # Ensure this label matches what your Prometheus instance looks for (serviceMonitorSelector)
+    release: prometheus-stack 
+  name: kube-controller-manager
+  namespace: monitoring
+spec:
+  # Talos control plane pods live in kube-system
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      # Common Talos/K8s label for the controller manager
+      k8s-app: kube-controller-manager 
+  endpoints:
+  - port: https-metrics # Ensure your Service defines this port name (usually 10257 for https)
+    interval: 30s
+    scheme: https
+    tlsConfig:
+      # Critical for Talos as it uses internal self-signed certs
+      insecureSkipVerify: true
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    metricRelabelings:
+    - action: drop
+      sourceLabels: [__name__]
+      regex: (kubelet_|scheduler_|apiserver_|etcd_|reflector_).* # Combined for brevity
+  # SLIs endpoint (standard in newer K8s versions)
+  - port: https-metrics
+    path: /metrics/slis
+    interval: 5s
+    scheme: https
+    tlsConfig:
+      insecureSkipVerify: true
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token

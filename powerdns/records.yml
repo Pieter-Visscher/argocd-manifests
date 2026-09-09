@@ -55,6 +55,7 @@ data:
     prometheus    IN CNAME route
     registry      IN CNAME route
     woodpecker    IN CNAME route
+    dns           IN CNAME route
 
     awx           IN A 10.0.200.7
     longhorn      IN A 10.0.50.199

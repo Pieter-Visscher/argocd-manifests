@@ -1,0 +1,49 @@
+authorative-dns:
+	HA authorative DNS cluster that resolves local domains
+
+HA recurser DNS cluster:
+	serving public internet domains
+
+DNS dist:
+	providing a cached DNS resolver for clients
+
+
+	   user
+	    | 
+         DNS-DIST
+	 /	\
+    auth-dns  recursor-dns
+       /          \
+     .lan        www.
+
+each AZ is its own clutser.
+
+az1.domain.com
+az2.domain.com
+az3.domain.com
+
+	3x DNS-DIST
+	3x auth-dns
+	3x recursor-dns
+
+	- kubernetes autoscaling
+	- headless kubernetes services
+	- clutser/node discovery?
+
+
+requirements:
+	auth-dns:
+		Database backend:
+			postgres:
+				cloudnative-pg
+				https://doc.powerdns.com/authoritative/backends/generic-postgresql.html
+				introduces a SPOF, if DB backend is down all AZ are down 
+
+			LMDB:
+				sidecar container on auth-dns
+				https://doc.powerdns.com/authoritative/backends/lmdb.html
+				each AZ has its own, independent database backend, changes are synced through an S3 bucket
+				use public S3 bucket such as AWS or self hosted like garageFS. If S3 is down changes cant be pushed, but DNS is still available.
+				
+				when using garage FS each site should have its own S3 endpoint. 
+				S3

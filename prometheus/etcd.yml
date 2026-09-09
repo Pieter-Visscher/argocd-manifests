@@ -1,0 +1,240 @@
+---
+# Talos runs etcd as a host process (not a pod), so we need a selector-less Service
+# with manually managed Endpoints pointing at the control plane node IPs.
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: etcd
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: etcd
+subsets:
+- addresses:
+  - ip: 10.0.50.200
+  - ip: 10.0.50.201
+  - ip: 10.0.50.202
+  ports:
+  - name: metrics
+    port: 2381
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: etcd
+spec:
+  clusterIP: None
+  ports:
+  - name: metrics
+    port: 2381
+    targetPort: 2381
+    protocol: TCP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: etcd
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: etcd
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/part-of: kube-prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: etcd
+  endpoints:
+  - port: metrics
+    interval: 30s
+    scheme: http
+    relabelings:
+    - action: replace
+      sourceLabels: [__address__]
+      targetLabel: instance
+      regex: (.+):\d+
+      replacement: $1
+    - action: replace
+      replacement: controlplane-etcd
+      targetLabel: job
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: etcd-rules
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: etcd
+    app.kubernetes.io/part-of: kube-prometheus
+    prometheus: k8s
+    role: alert-rules
+spec:
+  groups:
+  - name: etcd
+    rules:
+    - alert: EtcdNoLeader
+      annotations:
+        description: etcd cluster member {{ $labels.instance }} has no leader.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdnoleader
+        summary: etcd cluster has no leader.
+      expr: etcd_server_has_leader{job="controlplane-etcd"} == 0
+      for: 1m
+      labels:
+        severity: critical
+
+    - alert: EtcdInsufficientMembers
+      annotations:
+        description: etcd cluster has insufficient members — {{ $value }} of {{ $labels.job }} members up, quorum requires {{ printf "%.0f" (floor (div (add (count by (job) (etcd_server_has_leader{job="controlplane-etcd"})) 1) 2)) }}.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdinsufficientmembers
+        summary: etcd cluster has insufficient members.
+      expr: |
+        sum(etcd_server_has_leader{job="controlplane-etcd"}) by (job) < ((count(etcd_server_has_leader{job="controlplane-etcd"}) by (job) + 1) / 2)
+      for: 3m
+      labels:
+        severity: critical
+
+    - alert: EtcdHighNumberOfLeaderChanges
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": {{ $value }} leader changes in the last 15 minutes. Frequent elections reduce cluster stability.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighnumberofleaderchanges
+        summary: etcd cluster has high number of leader changes.
+      expr: |
+        increase(etcd_server_leader_changes_seen_total{job="controlplane-etcd"}[15m]) > 3
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: EtcdHighNumberOfFailedGRPCRequests
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": {{ $value | humanizePercentage }} of {{ $labels.grpc_method }} gRPC requests failed on etcd instance {{ $labels.instance }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighnumberoffailedgrpcrequests
+        summary: etcd cluster has high number of failed gRPC requests.
+      expr: |
+        (
+          sum(rate(grpc_server_handled_total{job="controlplane-etcd",grpc_code=~"Unknown|FailedPrecondition|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded"}[5m])) without (grpc_type, grpc_code)
+          /
+          sum(rate(grpc_server_handled_total{job="controlplane-etcd"}[5m])) without (grpc_type, grpc_code)
+        ) > 0.01
+      for: 10m
+      labels:
+        severity: warning
+
+    - alert: EtcdHighNumberOfFailedGRPCRequests
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": {{ $value | humanizePercentage }} of {{ $labels.grpc_method }} gRPC requests failed on etcd instance {{ $labels.instance }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighnumberoffailedgrpcrequests
+        summary: etcd cluster has high number of failed gRPC requests.
+      expr: |
+        (
+          sum(rate(grpc_server_handled_total{job="controlplane-etcd",grpc_code=~"Unknown|FailedPrecondition|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded"}[5m])) without (grpc_type, grpc_code)
+          /
+          sum(rate(grpc_server_handled_total{job="controlplane-etcd"}[5m])) without (grpc_type, grpc_code)
+        ) > 0.05
+      for: 5m
+      labels:
+        severity: critical
+
+    - alert: EtcdGRPCRequestsSlow
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": 99th percentile of {{ $labels.grpc_method }} gRPC requests is {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdgrpcrequestsslow
+        summary: etcd gRPC requests are slow.
+      expr: |
+        histogram_quantile(0.99, sum(rate(grpc_server_handling_seconds_bucket{job="controlplane-etcd",grpc_type="unary"}[5m])) without(grpc_type)) > 0.15
+      for: 10m
+      labels:
+        severity: critical
+
+    - alert: EtcdMemberCommunicationSlow
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": member communication with {{ $labels.To }} is {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdmembercommunicationslow
+        summary: etcd cluster member communication is slow.
+      expr: |
+        histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket{job="controlplane-etcd"}[5m])) > 0.15
+      for: 10m
+      labels:
+        severity: warning
+
+    - alert: EtcdHighNumberOfFailedProposals
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": {{ $value }} proposal failures on etcd instance {{ $labels.instance }} in the last hour.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighnumberoffailedproposals
+        summary: etcd cluster has high number of proposal failures.
+      expr: |
+        rate(etcd_server_proposals_failed_total{job="controlplane-etcd"}[15m]) > 5
+      for: 15m
+      labels:
+        severity: warning
+
+    - alert: EtcdHighFsyncDurations
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": 99th percentile fsync durations are {{ $value }}s on etcd instance {{ $labels.instance }}. Slow disk may cause timeouts.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighfsyncduration
+        summary: etcd high fsync durations.
+      expr: |
+        histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{job="controlplane-etcd"}[5m])) > 0.5
+      for: 10m
+      labels:
+        severity: warning
+
+    - alert: EtcdHighFsyncDurations
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": 99th percentile fsync durations are {{ $value }}s on etcd instance {{ $labels.instance }}. Slow disk may cause timeouts.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighfsyncduration
+        summary: etcd high fsync durations.
+      expr: |
+        histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{job="controlplane-etcd"}[5m])) > 1
+      for: 10m
+      labels:
+        severity: critical
+
+    - alert: EtcdHighCommitDurations
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": 99th percentile commit durations are {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighcommitduration
+        summary: etcd high commit durations.
+      expr: |
+        histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket{job="controlplane-etcd"}[5m])) > 0.25
+      for: 10m
+      labels:
+        severity: warning
+
+    - alert: EtcdDatabaseQuotaLowSpace
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": database size exceeds {{ $value | humanizePercentage }} of the quota on etcd instance {{ $labels.instance }}. Defragment or increase quota.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcddatabasequotalowspace
+        summary: etcd cluster database is running full.
+      expr: |
+        (etcd_mvcc_db_total_size_in_bytes{job="controlplane-etcd"} / etcd_server_quota_backend_bytes{job="controlplane-etcd"}) > 0.80
+      for: 10m
+      labels:
+        severity: critical
+
+    - alert: EtcdExcessiveDatabaseGrowth
+      annotations:
+        description: 'etcd cluster "{{ $labels.job }}": database size at {{ $labels.instance }} is predicted to exhaust quota in less than 4 hours based on growth over the last hour.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdexcessivedatabasegrowth
+        summary: etcd cluster database growing too fast.
+      expr: |
+        predict_linear(etcd_mvcc_db_total_size_in_bytes{job="controlplane-etcd"}[1h], 4*60*60) > etcd_server_quota_backend_bytes{job="controlplane-etcd"}
+      for: 10m
+      labels:
+        severity: warning
+
+  - name: etcd.rules
+    rules:
+    - expr: |
+        histogram_quantile(0.99, sum by (instance, le) (rate(etcd_disk_wal_fsync_duration_seconds_bucket{job="controlplane-etcd"}[5m])))
+      record: instance:etcd_disk_wal_fsync_duration_seconds:histogram_quantile_99
+    - expr: |
+        histogram_quantile(0.99, sum by (instance, le) (rate(etcd_disk_backend_commit_duration_seconds_bucket{job="controlplane-etcd"}[5m])))
+      record: instance:etcd_disk_backend_commit_duration_seconds:histogram_quantile_99
+    - expr: |
+        histogram_quantile(0.99, sum by (instance, To, le) (rate(etcd_network_peer_round_trip_time_seconds_bucket{job="controlplane-etcd"}[5m])))
+      record: instance:etcd_network_peer_round_trip_time_seconds:histogram_quantile_99

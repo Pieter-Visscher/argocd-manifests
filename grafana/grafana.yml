@@ -1,0 +1,193 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: kube-prometheus
+    app.kubernetes.io/version: 12.4.0
+  name: grafana
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: grafana
+      app.kubernetes.io/name: grafana
+      app.kubernetes.io/part-of: kube-prometheus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: grafana
+        app.kubernetes.io/name: grafana
+        app.kubernetes.io/part-of: kube-prometheus
+        app.kubernetes.io/version: 12.4.0
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - env: []
+        image: grafana/grafana:12.4.0
+        name: grafana
+        ports:
+        - containerPort: 3000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: grafana-storage
+          readOnly: false
+        - mountPath: /etc/grafana/provisioning/datasources
+          name: grafana-datasources
+          readOnly: false
+        - mountPath: /etc/grafana/provisioning/dashboards
+          name: grafana-dashboards
+          readOnly: false
+        - mountPath: /tmp
+          name: tmp-plugins
+          readOnly: false
+        - mountPath: /etc/grafana
+          name: grafana-config
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/node-exporter-full
+          name: grafana-dashboard-node-exporter-full
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/kube-api-server
+          name: grafana-dashboard-kube-api-server
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/etcd
+          name: grafana-dashboard-etcd
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/kube-state-metrics
+          name: grafana-dashboard-kube-state-metrics
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/longhorn
+          name: grafana-dashboard-longhorn
+          readOnly: false
+      securityContext:
+        fsGroup: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+      volumes:
+      - emptyDir: {}
+        name: grafana-storage
+      - name: grafana-datasources
+        secret:
+          secretName: grafana-datasources
+      - configMap:
+          name: grafana-dashboards
+        name: grafana-dashboards
+      - emptyDir:
+          medium: Memory
+        name: tmp-plugins
+      - name: grafana-config
+        secret:
+          secretName: grafana-config
+      - configMap:
+          name: grafana-dashboard-node-exporter-full
+        name: grafana-dashboard-node-exporter-full
+      - configMap:
+          name: grafana-dashboard-kube-api-server
+        name: grafana-dashboard-kube-api-server
+      - configMap:
+          name: grafana-dashboard-etcd
+        name: grafana-dashboard-etcd
+      - configMap:
+          name: grafana-dashboard-kube-state-metrics
+        name: grafana-dashboard-kube-state-metrics
+      - configMap:
+          name: grafana-dashboard-longhorn
+        name: grafana-dashboard-longhorn
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: kube-prometheus
+    app.kubernetes.io/version: 12.4.0
+  name: grafana-config
+  namespace: monitoring
+stringData:
+  grafana.ini: |
+    [date_formats]
+    default_timezone = UTC
+    [auth.anonymous]
+    enabled = true
+    org_role = Viewer
+type: Opaque
+---
+apiVersion: v1
+data:
+  dashboards.yaml: |-
+    {
+        "apiVersion": 1,
+        "providers": [
+            {
+                "folder": "Default",
+                "folderUid": "",
+                "name": "0",
+                "options": {
+                    "path": "/grafana-dashboard-definitions/0"
+                },
+                "orgId": 1,
+                "type": "file"
+            }
+        ]
+    }
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: kube-prometheus
+    app.kubernetes.io/version: 12.4.0
+  name: grafana-dashboards
+  namespace: monitoring
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: kube-prometheus
+    app.kubernetes.io/version: 12.4.0
+  name: grafana-datasources
+  namespace: monitoring
+stringData:
+  datasources.yaml: |-
+    {
+        "apiVersion": 1,
+        "datasources": [
+            {
+                "access": "proxy",
+                "editable": false,
+                "name": "prometheus",
+                "orgId": 1,
+                "type": "prometheus",
+                "url": "http://prometheus-operated.monitoring.svc:9090",
+                "version": 1
+            }
+        ]
+    }
+type: Opaque
