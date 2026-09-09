@@ -154,6 +154,19 @@ data:
   # Skip TLS verification for the homelab registry (self-signed CA)
   TRIVY_INSECURE_REGISTRIES.registry.nauvis.lan: "true"
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:      trivy-operator-config
+  namespace: trivy-system
+  labels:
+    app.kubernetes.io/name:    trivy-operator
+    app.kubernetes.io/part-of: trivy-operator
+    app.kubernetes.io/version: 0.23.0
+data:
+  vulnerabilityReports.scanner: Trivy
+  configAuditReports.scanner:   Trivy
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
