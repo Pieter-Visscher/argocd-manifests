@@ -93,10 +93,11 @@ data:
         source_labels = ["__meta_kubernetes_pod_node_name"]
         target_label  = "node"
       }
-      // Drop pods that are not running on this node
+      // Only keep pods scheduled on this node
       rule {
+        action        = "keep"
         source_labels = ["__meta_kubernetes_pod_node_name"]
-        target_label  = "__host__"
+        regex         = env("NODE_NAME")
       }
       // Build the log file path from pod UID and container name
       rule {
@@ -179,6 +180,11 @@ spec:
           protocol:      UDP
         - containerPort: 12345
           name:          http-metrics
+        env:
+        - name:  NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         resources:
           limits:
             cpu:    200m
