@@ -19,3 +19,8 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # Large dashboard ConfigMaps (e.g. node-exporter-full ~537KB) blow past
+      # the 262144-byte last-applied-configuration annotation limit under
+      # client-side apply. Use server-side apply, which stores managed fields
+      # instead of a whole-object annotation.
+      - ServerSideApply=true
