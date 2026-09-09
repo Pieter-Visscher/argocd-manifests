@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: coolify
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: ssh://git@git.pieter.fish/pieter/argocd-manifests.git
+    targetRevision: HEAD
+    path: coolify/
+    directory:
+      recurse: true
+  destination:
+    namespace: coolify
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    managedNamespaceMetadata:
+      labels:
+        gateway-access: true
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

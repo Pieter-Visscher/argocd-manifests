@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: home-assistant
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Pieter-Visscher/kubernetes-argo.git
+    targetRevision: HEAD
+    path: home-assistant/
+    directory:
+      recurse: true
+  destination:
+    namespace: home-assistant
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: privileged
+        pod-security.kubernetes.io/audit: privileged
+        pod-security.kubernetes.io/warn: privileged
+        gateway-access: true
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

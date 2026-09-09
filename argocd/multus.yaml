@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: multus
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Pieter-Visscher/kubernetes-argo.git
+    targetRevision: HEAD
+    path: multus/
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions: []

@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: network
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Pieter-Visscher/kubernetes-argo.git
+    targetRevision: HEAD
+    path: network/
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

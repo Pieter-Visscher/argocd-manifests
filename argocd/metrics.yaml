@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metrics
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Pieter-Visscher/kubernetes-argo.git
+    targetRevision: HEAD
+    path: metrics/
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions: []

@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mc-router
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Pieter-Visscher/kubernetes-argo.git
+    targetRevision: HEAD
+    path: mc-router/
+    directory:
+      recurse: true
+  destination:
+    namespace: minecraft
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    managedNamespaceMetadata: {}
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
