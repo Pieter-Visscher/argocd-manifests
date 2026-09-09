@@ -101,8 +101,9 @@ data:
       // Build the log file path from pod UID and container name
       rule {
         source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+        separator     = "/"
         target_label  = "__path__"
-        replacement   = "/var/log/pods/*_*_$1/$2/*.log"
+        replacement   = "/var/log/pods/*_*_$1/*.log"
       }
     }
 
