@@ -26,6 +26,10 @@ spec:
           value: "26.1.2"
         - name: MODE
           value: "creative"
+        - name: TYPE
+          value: "PAPER"
+        - name: MODRINTH_PROJECTS
+          value: "worldedit,axiom-paper-plugin"
         - name: WHITELIST
           value: "pietarus,umdobi"
         - name: OPS
