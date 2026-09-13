@@ -23,7 +23,13 @@
           - name: EULA
             value: "TRUE"
           - name: VERSION
-            value: "26.2"
+            value: "26.1.2"
+          - name: MODE
+            value: "creative"
+          - name: WHITELIST
+            value: "pietarus,umdobi"
+          - name: OPS: "pietarus,umdobi" 
+            value: "pietarus,umdobi"
           image: itzg/minecraft-server
           imagePullPolicy: Always
           name: minecraft
