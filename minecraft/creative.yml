@@ -1,0 +1,82 @@
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+    labels:
+      run: mc-creative
+    name: mc-creative
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    selector:
+      matchLabels:
+        run: mc-creative
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          run: mc-creative
+      spec:
+        containers:
+        - env:
+          - name: EULA
+            value: "TRUE"
+          - name: VERSION
+            value: "26.1.2"
+          - name: MODE
+            value: "creative"
+          - name: WHITELIST
+            value: "pietarus,umdobi"
+          - name: OPS: "pietarus,umdobi" 
+            value: "pietarus,umdobi"
+          image: itzg/minecraft-server
+          imagePullPolicy: Always
+          name: minecraft
+          ports:
+          - containerPort: 25565
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /data
+            name: data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+        terminationGracePeriodSeconds: 30
+        volumeMounts:
+        - name: data 
+          mountPath: /data 
+    volumeClaimTemplates:
+    - metadata:
+        name: mc-creative
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "longhorn"
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mc-creative
+  namespace: minecraft
+spec:
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: minecraft
+    port: 25565
+    protocol: TCP
+    targetPort: 25565
+  selector:
+    run: mc-creative
+  type: LoadBalancer
