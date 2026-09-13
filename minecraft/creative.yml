@@ -28,7 +28,7 @@
             value: "creative"
           - name: WHITELIST
             value: "pietarus,umdobi"
-          - name: OPS: "pietarus,umdobi" 
+          - name: OPS
             value: "pietarus,umdobi"
           image: itzg/minecraft-server
           imagePullPolicy: Always
