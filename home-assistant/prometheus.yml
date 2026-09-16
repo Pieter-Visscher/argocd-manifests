@@ -1,0 +1,17 @@
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: homeassistant
+  namespace: home-assistant
+spec:
+  staticConfigs:
+    - targets: ['10.0.91.254:8123']
+  metricsPath: /api/prometheus
+  scheme: HTTP
+  scrapeInterval: 60s
+  authorization:
+    credentials:
+      name: homeassistant-token
+      key: token
+
